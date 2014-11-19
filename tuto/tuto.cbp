@@ -39,10 +39,12 @@
 		<Unit filename="include/ast.h" />
 		<Unit filename="include/lexer.h" />
 		<Unit filename="include/parser.h" />
+		<Unit filename="include/token.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/ast.cpp" />
 		<Unit filename="src/lexer.cpp" />
 		<Unit filename="src/parser.cpp" />
+		<Unit filename="src/token.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />
