@@ -1,0 +1,42 @@
+# depslib dependency file v1.0
+1416419530 source:/home/csdt/Documents/llvm/tuto/main.cpp
+	<iostream>
+	"include/token.h"
+	"include/lexer.h"
+	"include/parser.h"
+	<fstream>
+
+1416416467 /home/csdt/Documents/llvm/tuto/include/lexer.h
+	<string>
+	<iostream>
+	<iterator>
+
+1416421902 source:/home/csdt/Documents/llvm/tuto/src/lexer.cpp
+	"../include/token.h"
+	"../include/lexer.h"
+
+1416267071 source:/home/csdt/Documents/llvm/tuto/src/ast.cpp
+	"../include/ast.h"
+	<iostream>
+
+1416267149 /home/csdt/Documents/llvm/tuto/include/ast.h
+	<string>
+	<vector>
+	<iostream>
+
+1416420280 source:/home/csdt/Documents/llvm/tuto/src/parser.cpp
+	"../include/parser.h"
+	"../include/lexer.h"
+	<typeinfo>
+
+1416418483 /home/csdt/Documents/llvm/tuto/include/parser.h
+	"token.h"
+	"ast.h"
+	<map>
+
+1416419320 /home/csdt/Documents/llvm/tuto/include/token.h
+	<string>
+
+1416416257 source:/home/csdt/Documents/llvm/tuto/src/token.cpp
+	"../include/token.h"
+
