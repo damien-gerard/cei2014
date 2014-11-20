@@ -60,16 +60,21 @@
 	"ast.h"
 	<map>
 
-1416267149 /home/csdt/Documents/llvm/cei2014/tuto/include/ast.h
+1416496587 /home/csdt/Documents/llvm/cei2014/tuto/include/ast.h
 	<string>
 	<vector>
 	<iostream>
+	"llvm/IR/Verifier.h"
+	"llvm/IR/DerivedTypes.h"
+	"llvm/IR/IRBuilder.h"
+	"llvm/IR/LLVMContext.h"
+	"llvm/IR/Module.h"
 
-1416267071 source:/home/csdt/Documents/llvm/cei2014/tuto/src/ast.cpp
+1416496821 source:/home/csdt/Documents/llvm/cei2014/tuto/src/ast.cpp
 	"../include/ast.h"
 	<iostream>
 
-1416421902 source:/home/csdt/Documents/llvm/cei2014/tuto/src/lexer.cpp
+1416495638 source:/home/csdt/Documents/llvm/cei2014/tuto/src/lexer.cpp
 	"../include/token.h"
 	"../include/lexer.h"
 
@@ -80,4 +85,476 @@
 
 1416416257 source:/home/csdt/Documents/llvm/cei2014/tuto/src/token.cpp
 	"../include/token.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Verifier.h
+	"llvm/ADT/StringRef.h"
+	<string>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/StringRef.h
+	<algorithm>
+	<cassert>
+	<cstring>
+	<limits>
+	<string>
+	<utility>
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/DerivedTypes.h
+	"llvm/IR/Type.h"
+	"llvm/Support/Compiler.h"
+	"llvm/Support/DataTypes.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Type.h
+	"llvm-c/Core.h"
+	"llvm/ADT/APFloat.h"
+	"llvm/ADT/SmallPtrSet.h"
+	"llvm/Support/CBindingWrapping.h"
+	"llvm/Support/Casting.h"
+	"llvm/Support/DataTypes.h"
+	"llvm/Support/ErrorHandling.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm-c/Core.h
+	"llvm-c/Support.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm-c/Support.h
+	"llvm/Support/DataTypes.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/DataTypes.h
+	<cmath>
+	<math.h>
+	<inttypes.h>
+	<stdint.h>
+	<sys/types.h>
+	"llvm/Support/AIXDataTypesFix.h"
+	<stdlib.h>
+	<stddef.h>
+	<sys/types.h>
+	<cmath>
+	<math.h>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/AIXDataTypesFix.h
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/APFloat.h
+	"llvm/ADT/APInt.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/APInt.h
+	"llvm/ADT/ArrayRef.h"
+	"llvm/Support/Compiler.h"
+	"llvm/Support/MathExtras.h"
+	<cassert>
+	<climits>
+	<cstring>
+	<string>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/ArrayRef.h
+	"llvm/ADT/None.h"
+	"llvm/ADT/SmallVector.h"
+	<vector>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/None.h
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/SmallVector.h
+	"llvm/ADT/iterator_range.h"
+	"llvm/Support/AlignOf.h"
+	"llvm/Support/Compiler.h"
+	"llvm/Support/MathExtras.h"
+	"llvm/Support/type_traits.h"
+	<algorithm>
+	<cassert>
+	<cstddef>
+	<cstdlib>
+	<cstring>
+	<iterator>
+	<memory>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/iterator_range.h
+	<utility>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/AlignOf.h
+	"llvm/Support/Compiler.h"
+	<cstddef>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/Compiler.h
+	"llvm/Config/llvm-config.h"
+	<sanitizer/msan_interface.h>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Config/llvm-config.h
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/MathExtras.h
+	"llvm/Support/Compiler.h"
+	"llvm/Support/SwapByteOrder.h"
+	<cassert>
+	<cstring>
+	<type_traits>
+	<intrin.h>
+	<limits>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/SwapByteOrder.h
+	"llvm/Support/DataTypes.h"
+	<cstddef>
+	<limits>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/type_traits.h
+	<type_traits>
+	<utility>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/SmallPtrSet.h
+	"llvm/Support/Compiler.h"
+	"llvm/Support/DataTypes.h"
+	"llvm/Support/PointerLikeTypeTraits.h"
+	<cassert>
+	<cstddef>
+	<cstring>
+	<iterator>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/PointerLikeTypeTraits.h
+	"llvm/Support/DataTypes.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/CBindingWrapping.h
+	"llvm/Support/Casting.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/Casting.h
+	"llvm/Support/Compiler.h"
+	"llvm/Support/type_traits.h"
+	<cassert>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/ErrorHandling.h
+	"llvm/ADT/StringRef.h"
+	"llvm/Support/Compiler.h"
+	<string>
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/IRBuilder.h
+	"llvm/ADT/ArrayRef.h"
+	"llvm/ADT/StringRef.h"
+	"llvm/ADT/Twine.h"
+	"llvm/IR/BasicBlock.h"
+	"llvm/IR/ConstantFolder.h"
+	"llvm/IR/DataLayout.h"
+	"llvm/IR/Instructions.h"
+	"llvm/IR/LLVMContext.h"
+	"llvm/IR/Operator.h"
+	"llvm/IR/ValueHandle.h"
+	"llvm/Support/CBindingWrapping.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/Twine.h
+	"llvm/ADT/StringRef.h"
+	"llvm/Support/DataTypes.h"
+	"llvm/Support/ErrorHandling.h"
+	<cassert>
+	<string>
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/BasicBlock.h
+	"llvm/ADT/Twine.h"
+	"llvm/ADT/ilist.h"
+	"llvm/IR/Instruction.h"
+	"llvm/IR/SymbolTableListTraits.h"
+	"llvm/Support/CBindingWrapping.h"
+	"llvm/Support/DataTypes.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/ilist.h
+	"llvm/Support/Compiler.h"
+	<algorithm>
+	<cassert>
+	<cstddef>
+	<iterator>
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Instruction.h
+	"llvm/ADT/ArrayRef.h"
+	"llvm/ADT/ilist_node.h"
+	"llvm/IR/DebugLoc.h"
+	"llvm/IR/User.h"
+	"llvm/IR/Instruction.def"
+	"llvm/IR/Instruction.def"
+	"llvm/IR/Instruction.def"
+	"llvm/IR/Instruction.def"
+	"llvm/IR/Instruction.def"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/ilist_node.h
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/DebugLoc.h
+	"llvm/Support/DataTypes.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/User.h
+	"llvm/ADT/iterator.h"
+	"llvm/ADT/iterator_range.h"
+	"llvm/IR/Value.h"
+	"llvm/Support/ErrorHandling.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/iterator.h
+	<iterator>
+	<cstddef>
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Value.h
+	"llvm-c/Core.h"
+	"llvm/ADT/iterator_range.h"
+	"llvm/IR/Use.h"
+	"llvm/Support/CBindingWrapping.h"
+	"llvm/Support/Casting.h"
+	"llvm/Support/Compiler.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Use.h
+	"llvm-c/Core.h"
+	"llvm/ADT/PointerIntPair.h"
+	"llvm/Support/CBindingWrapping.h"
+	"llvm/Support/Compiler.h"
+	<cstddef>
+	<iterator>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/PointerIntPair.h
+	"llvm/Support/Compiler.h"
+	"llvm/Support/PointerLikeTypeTraits.h"
+	<cassert>
+	<limits>
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Instruction.def
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/SymbolTableListTraits.h
+	"llvm/ADT/ilist.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/ConstantFolder.h
+	"llvm/IR/Constants.h"
+	"llvm/IR/InstrTypes.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Constants.h
+	"llvm/ADT/APFloat.h"
+	"llvm/ADT/APInt.h"
+	"llvm/ADT/ArrayRef.h"
+	"llvm/IR/Constant.h"
+	"llvm/IR/DerivedTypes.h"
+	"llvm/IR/OperandTraits.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Constant.h
+	"llvm/IR/User.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/OperandTraits.h
+	"llvm/IR/User.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/InstrTypes.h
+	"llvm/ADT/Twine.h"
+	"llvm/IR/DerivedTypes.h"
+	"llvm/IR/Instruction.h"
+	"llvm/IR/OperandTraits.h"
+	"llvm/IR/Instruction.def"
+	"llvm/IR/Instruction.def"
+	"llvm/IR/Instruction.def"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/DataLayout.h
+	"llvm/ADT/DenseMap.h"
+	"llvm/ADT/SmallVector.h"
+	"llvm/IR/DerivedTypes.h"
+	"llvm/IR/Type.h"
+	"llvm/Pass.h"
+	"llvm/Support/DataTypes.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/DenseMap.h
+	"llvm/ADT/DenseMapInfo.h"
+	"llvm/Support/AlignOf.h"
+	"llvm/Support/Compiler.h"
+	"llvm/Support/MathExtras.h"
+	"llvm/Support/PointerLikeTypeTraits.h"
+	"llvm/Support/type_traits.h"
+	<algorithm>
+	<cassert>
+	<climits>
+	<cstddef>
+	<cstring>
+	<iterator>
+	<new>
+	<utility>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/DenseMapInfo.h
+	"llvm/Support/PointerLikeTypeTraits.h"
+	"llvm/Support/type_traits.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Pass.h
+	"llvm/Support/Compiler.h"
+	<string>
+	"llvm/PassSupport.h"
+	"llvm/PassAnalysisSupport.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/PassSupport.h
+	"Pass.h"
+	"llvm/InitializePasses.h"
+	"llvm/PassInfo.h"
+	"llvm/PassRegistry.h"
+	"llvm/Support/Atomic.h"
+	"llvm/Support/Valgrind.h"
+	<vector>
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/InitializePasses.h
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/PassInfo.h
+	<cassert>
+	<vector>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/PassRegistry.h
+	"llvm-c/Core.h"
+	"llvm/ADT/DenseMap.h"
+	"llvm/ADT/SmallPtrSet.h"
+	"llvm/ADT/StringMap.h"
+	"llvm/ADT/StringRef.h"
+	"llvm/PassInfo.h"
+	"llvm/Support/CBindingWrapping.h"
+	"llvm/Support/RWMutex.h"
+	<vector>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/StringMap.h
+	"llvm/ADT/StringRef.h"
+	"llvm/Support/Allocator.h"
+	<cstring>
+	<utility>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/Allocator.h
+	"llvm/ADT/SmallVector.h"
+	"llvm/Support/AlignOf.h"
+	"llvm/Support/DataTypes.h"
+	"llvm/Support/MathExtras.h"
+	"llvm/Support/Memory.h"
+	<algorithm>
+	<cassert>
+	<cstddef>
+	<cstdlib>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/Memory.h
+	"llvm/Support/DataTypes.h"
+	<string>
+	<system_error>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/RWMutex.h
+	"llvm/Support/Compiler.h"
+	"llvm/Support/Threading.h"
+	<cassert>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/Threading.h
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/Atomic.h
+	"llvm/Support/DataTypes.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/Support/Valgrind.h
+	"llvm/Config/llvm-config.h"
+	"llvm/Support/Compiler.h"
+	<stddef.h>
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/PassAnalysisSupport.h
+	"llvm/ADT/SmallVector.h"
+	"llvm/ADT/StringRef.h"
+	"llvm/Pass.h"
+	<vector>
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Instructions.h
+	"llvm/ADT/ArrayRef.h"
+	"llvm/ADT/iterator_range.h"
+	"llvm/ADT/SmallVector.h"
+	"llvm/IR/Attributes.h"
+	"llvm/IR/CallingConv.h"
+	"llvm/IR/DerivedTypes.h"
+	"llvm/IR/InstrTypes.h"
+	"llvm/Support/ErrorHandling.h"
+	<iterator>
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Attributes.h
+	"llvm/ADT/ArrayRef.h"
+	"llvm/ADT/FoldingSet.h"
+	"llvm/Support/Compiler.h"
+	"llvm/Support/PointerLikeTypeTraits.h"
+	<bitset>
+	<cassert>
+	<map>
+	<string>
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/ADT/FoldingSet.h
+	"llvm/ADT/SmallVector.h"
+	"llvm/ADT/StringRef.h"
+	"llvm/Support/Allocator.h"
+	"llvm/Support/DataTypes.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/CallingConv.h
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/LLVMContext.h
+	"llvm-c/Core.h"
+	"llvm/Support/CBindingWrapping.h"
+	"llvm/Support/Compiler.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Operator.h
+	"llvm/IR/Constants.h"
+	"llvm/IR/DataLayout.h"
+	"llvm/IR/DerivedTypes.h"
+	"llvm/IR/GetElementPtrTypeIterator.h"
+	"llvm/IR/Instruction.h"
+	"llvm/IR/Type.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/GetElementPtrTypeIterator.h
+	"llvm/IR/DerivedTypes.h"
+	"llvm/IR/User.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/ValueHandle.h
+	"llvm/ADT/DenseMapInfo.h"
+	"llvm/ADT/PointerIntPair.h"
+	"llvm/IR/Value.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Module.h
+	"llvm/ADT/iterator_range.h"
+	"llvm/IR/Comdat.h"
+	"llvm/IR/DataLayout.h"
+	"llvm/IR/Function.h"
+	"llvm/IR/GlobalAlias.h"
+	"llvm/IR/GlobalVariable.h"
+	"llvm/IR/Metadata.h"
+	"llvm/Support/CBindingWrapping.h"
+	"llvm/Support/DataTypes.h"
+	<system_error>
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Comdat.h
+	"llvm/ADT/StringRef.h"
+	"llvm/Support/Compiler.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Function.h
+	"llvm/ADT/iterator_range.h"
+	"llvm/IR/Argument.h"
+	"llvm/IR/Attributes.h"
+	"llvm/IR/BasicBlock.h"
+	"llvm/IR/CallingConv.h"
+	"llvm/IR/GlobalObject.h"
+	"llvm/Support/Compiler.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Argument.h
+	"llvm/ADT/Twine.h"
+	"llvm/ADT/ilist_node.h"
+	"llvm/IR/Attributes.h"
+	"llvm/IR/Value.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/GlobalObject.h
+	"llvm/IR/Constant.h"
+	"llvm/IR/DerivedTypes.h"
+	"llvm/IR/GlobalValue.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/GlobalValue.h
+	"llvm/IR/Constant.h"
+	"llvm/IR/DerivedTypes.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/GlobalAlias.h
+	"llvm/ADT/Twine.h"
+	"llvm/ADT/ilist_node.h"
+	"llvm/IR/GlobalValue.h"
+	"llvm/IR/OperandTraits.h"
+
+1416488724 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/GlobalVariable.h
+	"llvm/ADT/Twine.h"
+	"llvm/ADT/ilist_node.h"
+	"llvm/IR/GlobalObject.h"
+	"llvm/IR/OperandTraits.h"
+
+1416488725 /home/csdt/Documents/llvm/cei2014/llvm-build/include/llvm/IR/Metadata.h
+	"llvm/ADT/ArrayRef.h"
+	"llvm/ADT/FoldingSet.h"
+	"llvm/ADT/ilist_node.h"
+	"llvm/ADT/iterator_range.h"
+	"llvm/IR/Value.h"
+
+1416496665 source:/home/csdt/Documents/llvm/cei2014/tuto/src/builder.cpp
+	"../include/builder.h"
+
+1416496607 /home/csdt/Documents/llvm/cei2014/tuto/include/builder.h
+	"ast.h"
+	<map>
+	<string>
 

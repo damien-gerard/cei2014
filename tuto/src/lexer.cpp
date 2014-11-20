@@ -35,7 +35,7 @@ Token Lexer::nextToken() {
         return Token::RIGHTP;
     case ',':
         this->eatChr();
-        return Token::RIGHTP;
+        return Token::COMMA;
     case ';':
         this->eatChr();
         return Token::SEMICOL;

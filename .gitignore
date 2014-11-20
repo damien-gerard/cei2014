@@ -26,3 +26,12 @@
 *.exe
 *.out
 *.app
+
+# Code Blocks
+*.cbTemp
+*/bin/Debug/*
+*/bin/Release/*
+
+# LLVM
+llvm-build/*
+llvm-src/*

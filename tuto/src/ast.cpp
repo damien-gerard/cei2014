@@ -1,6 +1,9 @@
 #include "../include/ast.h"
 #include <iostream>
 
+
+using namespace llvm;
+
 /**
  * AST
  */
@@ -23,6 +26,10 @@ NumberAST::NumberAST(double n)
 {}
 NumberAST::~NumberAST() = default;
 
+Value* NumberAST::Codegen() {
+    return 0;
+}
+
 
 /**
  * VariableAST
@@ -32,6 +39,9 @@ VariableAST::VariableAST(const std::string& name)
 {}
 VariableAST::~VariableAST() = default;
 
+Value* VariableAST::Codegen() {
+    return 0;
+}
 
 /**
  * OpAST
@@ -43,6 +53,10 @@ OpAST::~OpAST()
 {
     delete this->_lhs;
     delete this->_rhs;
+}
+
+Value* OpAST::Codegen() {
+    return 0;
 }
 
 
@@ -60,6 +74,10 @@ CallAST::~CallAST()
         delete *it;
     }
     this->_args.clear();
+}
+
+Value* CallAST::Codegen() {
+    return 0;
 }
 
 

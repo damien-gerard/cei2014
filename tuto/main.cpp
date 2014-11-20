@@ -11,7 +11,7 @@ int main()
 {
     Token t;
     ifstream myfile;
-    myfile.open("/tmp/pouet");
+    //myfile.open("/tmp/test");
     Lexer lex(cin);
     Parser parser(lex);
 /*

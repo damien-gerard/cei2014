@@ -5,6 +5,14 @@
 #include <vector>
 #include <iostream>
 
+
+#include "llvm/IR/Verifier.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+
+
 class AST
 {
     public:
@@ -37,6 +45,7 @@ class ExprAST : public AST
 {
     public:
         virtual ~ExprAST() = default;
+        virtual llvm::Value* Codegen() = 0;
     protected:
     private:
 };
@@ -46,6 +55,7 @@ class NumberAST : public ExprAST
     public:
         NumberAST(double);
         virtual ~NumberAST();
+        virtual llvm::Value* Codegen();
     protected:
     private:
         double _val;
@@ -56,6 +66,7 @@ class VariableAST : public ExprAST
     public:
         VariableAST(const std::string &);
         virtual ~VariableAST();
+        virtual llvm::Value* Codegen();
     protected:
     private:
         std::string _name;
@@ -66,6 +77,7 @@ class OpAST : public ExprAST
     public:
         OpAST(char op, ExprAST* lhs, ExprAST* rhs);
         virtual ~OpAST();
+        virtual llvm::Value* Codegen();
     protected:
     private:
         char _chr;
@@ -77,6 +89,7 @@ class CallAST : public ExprAST
     public:
         CallAST(const std::string&, const std::vector<ExprAST*>&);
         virtual ~CallAST();
+        virtual llvm::Value* Codegen();
     protected:
     private:
         std::string _name;
