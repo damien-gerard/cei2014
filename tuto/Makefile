@@ -60,32 +60,37 @@ SRC_DIR = src
 INCLUDE_DIR = include
 
 SRC = main.cpp $(wildcard $(SRC_DIR)/*.cpp)
+INCLUDES = $(wildcard $(INCLUDE_DIR)/*.h)
 
 OBJ_DEBUG = $(addprefix $(OBJDIR_DEBUG)/, $(addsuffix .o, $(basename $(SRC))))
 OBJ_RELEASE = $(addprefix $(OBJDIR_RELEASE)/, $(addsuffix .o, $(basename $(SRC))))
+
 
 all: debug release
 
 clean: clean_debug clean_release
 
+
+.SECONDEXPANSION:
+
+
 before_debug:
 	test -d $(OUTDIR_DEBUG) || mkdir -p $(OUTDIR_DEBUG)
 	test -d $(OBJDIR_DEBUG) || mkdir -p $(OBJDIR_DEBUG)
 	test -d $(OBJDIR_DEBUG)/src || mkdir -p $(OBJDIR_DEBUG)/src
-	@echo pouet
-	@echo $(LLVM_FLAGS)
-	@echo pouet
 
 after_debug:
 
 Debug: debug
 debug: before_debug out_debug after_debug
 
-out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
+out_debug: before_debug $(OUT_DEBUG)
+
+$(OUT_DEBUG): $(INCLUDE) $(OBJ_DEBUG) $(DEP_DEBUG)
 	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG) $(LLVM_LDFLAGS_DEBUG)
 
 
-$(OBJDIR_DEBUG)/%.o : %.cpp
+$(OBJDIR_DEBUG)/%.o : %.cpp ${INCLUDES} ##  $${shell $(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -MM $(LLVM_CFLAGS_DEBUG) $$<}
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c $< -o $@ $(LLVM_CFLAGS_DEBUG)
 
 cleanDebug: clean_debug
@@ -95,7 +100,6 @@ clean_debug:
 	rm -rf $(OBJDIR_DEBUG)
 	rm -rf $(OBJDIR_DEBUG)/src
 
-beforeRelease: before_release
 before_release:
 	test -d $(OUTDIR_RELEASE) || mkdir -p $(OUTDIR_RELEASE)
 	test -d $(OBJDIR_RELEASE) || mkdir -p $(OBJDIR_RELEASE)
@@ -106,12 +110,15 @@ after_release:
 Release: release
 release: before_release out_release after_release
 
-out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
+out_release: before_release $(OUT_RELEASE)
+
+$(OUT_RELEASE): $(OBJ_RELEASE) $(DEP_RELEASE)
 	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE) $(LLVM_LDFLAGS_RELEASE)
 
-$(OBJDIR_RELEASE)/%.o : %.cpp
+$(OBJDIR_RELEASE)/%.o : %.cpp $(shell $(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -MM $(LLVM_CFLAGS_RELEASE))
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c $< -o $@ $(LLVM_CFLAGS_RELEASE)
 
+cleanRelease: clean_release
 clean_release:
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
 	rm -rf $(OUTDIR_RELEASE)
@@ -120,3 +127,4 @@ clean_release:
 
 .PHONY: before_debug after_debug clean_debug before_release after_release clean_release
 
+INCLUDES =

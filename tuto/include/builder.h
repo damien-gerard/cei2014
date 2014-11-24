@@ -21,7 +21,7 @@ class Builder
     protected:
     private:
         llvm::Module* _mod;
-        llvm::IRBuilder _irb;
+        llvm::IRBuilder<> _irb;
         std::map<std::string, llvm::Value*> _namedValues;
 };
 

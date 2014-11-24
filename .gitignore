@@ -27,10 +27,17 @@
 *.out
 *.app
 
+# Temp Files
+*.bak
+*.swp
+~*
+*/~*
+
 # Code Blocks
 *.cbTemp
 */bin/Debug/*
 */bin/Release/*
+*.depend
 
 # LLVM
 llvm-build/*
