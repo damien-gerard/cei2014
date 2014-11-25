@@ -38,6 +38,7 @@
 */bin/Debug/*
 */bin/Release/*
 *.depend
+*.layout
 
 # LLVM
 llvm-build/*

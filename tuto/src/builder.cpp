@@ -4,21 +4,22 @@
 using namespace llvm;
 
 Builder::Builder(Parser& p)
-: Builder("Builder", p, nullptr)
-{}
-Builder::Builder(Parser& p, ExecutionEngine* jit)
-: Builder("Builder", p, jit)
+: Builder("Builder", p)
 {}
 Builder::Builder(const std::string& name, Parser& p)
-: Builder(name, p, nullptr)
-{}
-Builder::Builder(const std::string& name, Parser& p, ExecutionEngine* jit)
-: _parser(p), _mod(new Module(name, getGlobalContext())), _irb(getGlobalContext()), _jit(jit)
+: _parser(p), _mod(new Module(name, getGlobalContext())),
+  _irb(getGlobalContext()), _jit(nullptr)
 {}
 
 Builder::~Builder()
 {
-    delete this->_mod;
+    // Si le moteur JIT a été créé, il a pris le contrôle du module
+    // et se charge donc de sa destruction
+    if (this->_jit) {
+        delete this->_jit;
+    } else {
+        delete this->_mod;
+    }
     this->_namedValues.clear();
 }
 
