@@ -3,12 +3,14 @@
 #include <typeinfo>
 
 Parser::Parser(Lexer& lex)
-: _lexer(lex), _tok(lex.nextToken())
+: _lexer(lex)
 {
     this->_precedence['<'] = 10;
     this->_precedence['+'] = 20;
     this->_precedence['-'] = 30;
     this->_precedence['*'] = 40;
+
+    this->eatToken();
 }
 
 Token Parser::eatToken() {
@@ -56,14 +58,14 @@ ExprAST* Parser::parenthesis() {
 
 
 ExprAST* Parser::identifier() {
-    std::string idName = this->_lexer._str;
+    std::string idName = this->_tok.str();
 
     // Consomme l'identifieur
     this->eatToken();
 
     // Simple identifer
-    if (this->_tok != Token::RIGHTP) {
-        return new VariableAST(this->_lexer._str);
+    if (this->_tok != Token::LEFTP) {
+        return new VariableAST(idName);
     }
 
     // Appel de fonction
@@ -199,19 +201,36 @@ FunctionAST* Parser::topLevelExpr() {
 
 
 AST* Parser::parseLine() {
-    switch (this->_tok) {
-    case Token::END:
-        return AST::Error("EOF");
-    case Token::SEMICOL:
-        this->eatToken();
-        return parseLine();
-    case Token::DEF:
-        return this->functionDef();
-    case Token::EXTERN:
-        return this->externDef();
-    default:
-        return this->expression();
+    bool semicol = false;
+    AST* ast = nullptr;
+    while (!ast) {
+      switch (this->_tok) {
+      case Token::END:
+          return AST::Error("EOF");
+      case Token::SEMICOL:
+          semicol = true;
+          this->eatToken();
+          break;
+      case Token::DEF:
+          ast = this->functionDef();
+          break;
+      case Token::EXTERN:
+          ast = this->externDef();
+          break;
+      default:
+          ast = this->expression();
+      }
+      if (this->_tok == Token::END) return ast;
+
+      // parseLine renvoie toujours un objet AST,
+      // sauf si le fichier est à la fin
+      if (!ast && !semicol) {
+          std::cerr << "Parse error" << std::endl;
+          this->eatToken();
+      }
+      semicol = false;
     }
+    return ast;
 }
 
 void Parser::parse() {
@@ -219,9 +238,9 @@ void Parser::parse() {
         AST* ast = this->parseLine();
         if (!ast) {
             if (this->_tok != Token::END) {
+            std::cerr << "Internal error" << std::endl;
                 this->eatToken();
             }
-            std::cerr << "Parse error" << std::endl;
         } else if (typeid(*ast) == typeid(PrototypeAST)) {
             std::cerr << "Extern declaration" << std::endl;
         } else if (typeid(*ast) == typeid(FunctionAST)) {

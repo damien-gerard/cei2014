@@ -1,5 +1,11 @@
 #include "../include/token.h"
+#include <sstream>
 
+std::string char2string(char c) {
+  std::stringstream ss;
+  ss.put(c);
+  return ss.str();
+}
 
 constexpr TokenType Token::END;
 constexpr TokenType Token::DEF;
@@ -15,10 +21,10 @@ constexpr TokenType Token::NIL;
 
 
 Token::Token()
-: _type(&Token::NIL), _str(""+(char)0)
+: _type(&Token::NIL), _str("")
 {}
 Token::Token(const TokenType& type)
-: _type(&type), _str(""+type.sym())
+: _type(&type), _str(char2string(type.sym()))
 {}
 Token::Token(const TokenType& type, const std::string& str)
 : _type(&type), _str(str)
@@ -45,6 +51,49 @@ Token& Token::operator=(const Token& tok) {
 
 Token::operator int() const {
     return int(*this->_type);
+}
+
+
+std::ostream& operator<<(std::ostream& out, const Token& tok) {
+  out << "Token::";
+  switch (tok) {
+  case Token::END:
+      out << "END";
+      break;
+  case Token::DEF:
+      out << "DEF";
+      break;
+  case Token::EXTERN:
+      out << "EXTERN";
+      break;
+  case Token::ID:
+      out << "ID";
+      break;
+  case Token::NUMBER:
+      out << "NUMBER";
+      break;
+  case Token::LEFTP:
+      out << "LEFTP";
+      break;
+  case Token::RIGHTP:
+      out << "RIGHTP";
+      break;
+  case Token::COMMA:
+      out << "COMMA";
+      break;
+  case Token::SEMICOL:
+      out << "SEMICOL";
+      break;
+  case Token::OP:
+      out << "OP";
+      break;
+  case Token::NIL:
+      out << "NIL";
+      break;
+  default:
+      out << "'" << tok.chr() << "'";
+  }
+  return out << "(\"" << tok.str() << "\")";
 }
 
 

@@ -11,6 +11,7 @@ class Parser
     public:
         Parser(Lexer&);
         void parse();
+        AST* parseLine();
     protected:
     private:
         Lexer& _lexer;
@@ -31,9 +32,6 @@ class Parser
         FunctionAST* functionDef();
         PrototypeAST* externDef();
         FunctionAST* topLevelExpr();
-
-
-        AST* parseLine();
 };
 
 #endif // PARSER_H

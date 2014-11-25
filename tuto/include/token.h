@@ -44,9 +44,9 @@ class Token
         bool operator!=(TokenType);
         operator int() const;
 
-        inline std::string str() {return this->_str;}
-        inline double dbl() {return strtod(this->_str.c_str(), 0);}
-        inline char chr() {return this->_str[0];}
+        inline std::string str() const {return this->_str;}
+        inline double dbl() const {return strtod(this->_str.c_str(), 0);}
+        inline char chr() const {return this->_str[0];}
 
         static constexpr TokenType END{'z'};
         static constexpr TokenType DEF{'d'};
@@ -66,5 +66,7 @@ class Token
         const TokenType *_type;
         std::string _str;
 };
+
+std::ostream& operator<<(std::ostream& out, const Token& tok);
 
 #endif // TOKEN_H

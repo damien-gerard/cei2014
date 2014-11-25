@@ -11,7 +11,7 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
-
+class Builder;
 
 class AST
 {
@@ -45,7 +45,7 @@ class ExprAST : public AST
 {
     public:
         virtual ~ExprAST() = default;
-        virtual llvm::Value* Codegen() = 0;
+        virtual llvm::Value* Codegen(Builder&) = 0;
     protected:
     private:
 };
@@ -55,7 +55,7 @@ class NumberAST : public ExprAST
     public:
         NumberAST(double);
         virtual ~NumberAST();
-        virtual llvm::Value* Codegen();
+        virtual llvm::Value* Codegen(Builder&);
     protected:
     private:
         double _val;
@@ -66,7 +66,7 @@ class VariableAST : public ExprAST
     public:
         VariableAST(const std::string &);
         virtual ~VariableAST();
-        virtual llvm::Value* Codegen();
+        virtual llvm::Value* Codegen(Builder&);
     protected:
     private:
         std::string _name;
@@ -77,7 +77,7 @@ class OpAST : public ExprAST
     public:
         OpAST(char op, ExprAST* lhs, ExprAST* rhs);
         virtual ~OpAST();
-        virtual llvm::Value* Codegen();
+        virtual llvm::Value* Codegen(Builder&);
     protected:
     private:
         char _chr;
@@ -89,7 +89,7 @@ class CallAST : public ExprAST
     public:
         CallAST(const std::string&, const std::vector<ExprAST*>&);
         virtual ~CallAST();
-        virtual llvm::Value* Codegen();
+        virtual llvm::Value* Codegen(Builder&);
     protected:
     private:
         std::string _name;
@@ -101,6 +101,7 @@ class DefinitionAST : public AST
 {
     public:
         virtual ~DefinitionAST() = default;
+        virtual llvm::Function* Codegen(Builder&) = 0;
     protected:
     private:
 };
@@ -110,6 +111,7 @@ class PrototypeAST : public DefinitionAST
     public:
         PrototypeAST(const std::string&, const std::vector<std::string>&);
         virtual ~PrototypeAST();
+        virtual llvm::Function* Codegen(Builder&);
     protected:
     private:
         std::string _name;
@@ -122,6 +124,7 @@ class FunctionAST : public DefinitionAST
         FunctionAST(PrototypeAST*, ExprAST*);
         //FunctionAST(PrototypeAST*, BlocExprAST*);
         virtual ~FunctionAST();
+        virtual llvm::Function* Codegen(Builder&);
     protected:
     private:
         PrototypeAST* _proto; // keep at destruction

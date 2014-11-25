@@ -1,64 +1,64 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="include/ast.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include/ast.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="89" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="include/token.h" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2011" topLine="4" />
-		</Cursor>
-	</File>
-	<File name="include/parser.h" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="349" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="src/lexer.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="60" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="src/token.cpp" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="336" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="include/builder.h" open="1" top="1" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="128" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Makefile" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="492" topLine="18" />
-		</Cursor>
-	</File>
-	<File name="include/lexer.h" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="217" topLine="0" />
+			<Cursor1 position="2681" topLine="99" />
 		</Cursor>
 	</File>
 	<File name="src/ast.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1001" topLine="57" />
+			<Cursor1 position="554" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="src/parser.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include/parser.h" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="4923" topLine="204" />
+			<Cursor1 position="217" topLine="9" />
+		</Cursor>
+	</File>
+	<File name="src/lexer.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="622" topLine="2" />
+		</Cursor>
+	</File>
+	<File name="src/token.cpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1880" topLine="44" />
 		</Cursor>
 	</File>
 	<File name="main.cpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="385" topLine="0" />
+			<Cursor1 position="323" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="include/builder.h" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1063" topLine="21" />
+		</Cursor>
+	</File>
+	<File name="src/parser.cpp" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="160" topLine="229" />
+		</Cursor>
+	</File>
+	<File name="include/token.h" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1249" topLine="43" />
+		</Cursor>
+	</File>
+	<File name="Makefile" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="897" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="src/builder.cpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="78" topLine="0" />
+			<Cursor1 position="2066" topLine="47" />
+		</Cursor>
+	</File>
+	<File name="include/lexer.h" open="1" top="1" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="217" topLine="0" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

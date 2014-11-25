@@ -3,6 +3,7 @@
 #include "include/token.h"
 #include "include/lexer.h"
 #include "include/parser.h"
+#include "include/builder.h"
 #include <fstream>
 
 using namespace std;
@@ -14,10 +15,11 @@ int main()
     //myfile.open("/tmp/test");
     Lexer lex(cin);
     Parser parser(lex);
+    Builder builder(parser);
 /*
     while ((t = lex.nextToken()) != Token::END) {
         cout << "->" << t.str().c_str() << endl << endl;
     }*/
-    parser.parse();
+    builder.build();
     return 0;
 }
