@@ -59,7 +59,7 @@ void Builder::build() {
           std::cerr << "empty" << std::endl;
         }
     }
-    /*
+
     if (expr && this->_jit) {
       std::cerr << "Execution:" << std::endl;
       void* fptr = this->_jit->getPointerToFunction(F);
@@ -68,9 +68,21 @@ void Builder::build() {
       double (*f)() = (double (*)())(intptr_t)fptr;
       std::cerr << "Result: " << f() << std::endl;
     }
-    */
+
   } while (ast);
 
   this->_mod->dump();
+}
+
+void Builder::createJIT() {
+  InitializeNativeTarget();
+  std::string err;
+  EngineBuilder eb = EngineBuilder(this->_mod);
+  eb.setErrorStr(&err);
+  auto jit = eb.create();
+  this->_jit = jit;
+  if (!jit) {
+    std::cerr << "Impossible de créer le moteur JIT : " << err << std::endl;
+  }
 }
 

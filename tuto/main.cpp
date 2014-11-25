@@ -16,6 +16,8 @@ int main()
     Lexer lex(cin);
     Parser parser(lex);
     Builder builder(parser);
+    builder.createJIT();
+
 /*
     while ((t = lex.nextToken()) != Token::END) {
         cout << "->" << t.str().c_str() << endl << endl;

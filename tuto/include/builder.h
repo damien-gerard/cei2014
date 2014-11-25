@@ -2,21 +2,11 @@
 #define BUILDER_H
 
 #include "ast.h"
+#include "llvm-dependencies.h"
 #include <map>
 #include <string>
 
-/*
-namespace llvm {
-    class Module;
-    template<>
-    class IRBuilder;
-}
-
-*/
 class Parser;
-namespace llvm {
-  class ExecutionEngine;
-}
 class Builder
 {
     public:
@@ -27,6 +17,7 @@ class Builder
         ~Builder();
 
         void build();
+        void createJIT();
 
         friend llvm::Value* VariableAST::Codegen(Builder&);
         friend llvm::Value* OpAST::Codegen(Builder&);

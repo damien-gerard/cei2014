@@ -22,10 +22,13 @@ LDFLAGS =
 
 
 LLVMDIR = ../llvm-build
+LLVM_CONFIG_FLAGS = --system-libs --libs core jit native
+LLVM_CONFIG_CFLAGS = --cxxflags $(LLVM_CONFIG_FLAGS)
+LLVM_CONFIG_LDFLAGS = --ldflags $(LLVM_CONFIG_FLAGS)
 LLVM_CFLAGS = -I $(LLVMDIR)/include
 LLVM_LDFLAGS = -L $(LLVMDIR)/lib
-LLVM_CFLAGS = $(filter-out -fno-rtti, $(shell $(LLVMDIR)/bin/llvm-config --cxxflags))
-LLVM_LDFLAGS = $(shell $(LLVMDIR)/bin/llvm-config --ldflags --system-libs --libs core)
+LLVM_CFLAGS = $(filter-out -fno-rtti, $(shell $(LLVMDIR)/bin/llvm-config $(LLVM_CONFIG_CFLAGS)))
+LLVM_LDFLAGS = $(shell $(LLVMDIR)/bin/llvm-config $(LLVM_CONFIG_LDFLAGS))
 
 
 INC_DEBUG = $(INC)

@@ -45,6 +45,7 @@
 		<Unit filename="include/ast.h" />
 		<Unit filename="include/builder.h" />
 		<Unit filename="include/lexer.h" />
+		<Unit filename="include/llvm-dependencies.h" />
 		<Unit filename="include/parser.h" />
 		<Unit filename="include/token.h" />
 		<Unit filename="main.cpp" />
