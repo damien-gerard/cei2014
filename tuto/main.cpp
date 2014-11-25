@@ -17,6 +17,7 @@ int main()
     Parser parser(lex);
     Builder builder(parser);
     builder.createJIT();
+    builder.setOptimizer(builder.getStandardOptimizer());
 
 /*
     while ((t = lex.nextToken()) != Token::END) {

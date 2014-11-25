@@ -11,13 +11,14 @@ class Builder
 {
     public:
         Builder(Parser&);
-        Builder(Parser&, llvm::ExecutionEngine*);
         Builder(const std::string&, Parser&);
-        Builder(const std::string&, Parser&, llvm::ExecutionEngine*);
         ~Builder();
 
         void build();
         void createJIT();
+        void setOptimizer(llvm::FunctionPassManager*);
+
+        llvm::FunctionPassManager* getStandardOptimizer();
 
         friend llvm::Value* VariableAST::Codegen(Builder&);
         friend llvm::Value* OpAST::Codegen(Builder&);
@@ -27,13 +28,16 @@ class Builder
     protected:
         inline llvm::Module& module() {return *this->_mod;}
         inline llvm::IRBuilder<>& irbuilder() {return this->_irb;}
-        //inline llvm::ExecutionEngine* irbuilder() {return this->_jit;}
+        //inline llvm::ExecutionEngine* jit() {return this->_jit;}
+        //inline llvm::FunctionPassManager* optimizer() {return *this->_optimizer;}
         inline std::map<std::string, llvm::Value*>& namedValues() {return this->_namedValues;}
+        void optimize(llvm::Function*);
     private:
         Parser& _parser;
-        llvm::Module* _mod;
+        llvm::Module* _mod; // delete at destruction
         llvm::IRBuilder<> _irb;
-        llvm::ExecutionEngine* _jit;
+        llvm::ExecutionEngine* _jit; // delete at destruction
+        llvm::FunctionPassManager* _optimizer; // delete at destruction
         std::map<std::string, llvm::Value*> _namedValues;
 };
 

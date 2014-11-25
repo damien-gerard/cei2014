@@ -8,7 +8,7 @@ Builder::Builder(Parser& p)
 {}
 Builder::Builder(const std::string& name, Parser& p)
 : _parser(p), _mod(new Module(name, getGlobalContext())),
-  _irb(getGlobalContext()), _jit(nullptr)
+  _irb(getGlobalContext()), _jit(nullptr), _optimizer(nullptr)
 {}
 
 Builder::~Builder()
@@ -19,6 +19,9 @@ Builder::~Builder()
         delete this->_jit;
     } else {
         delete this->_mod;
+    }
+    if (this->_optimizer) {
+        delete this->_optimizer;
     }
     this->_namedValues.clear();
 }
@@ -87,3 +90,36 @@ void Builder::createJIT() {
   }
 }
 
+void Builder::setOptimizer(FunctionPassManager* optimizer) {
+    this->_optimizer = optimizer;
+}
+
+FunctionPassManager* Builder::getStandardOptimizer() {
+    FunctionPassManager* optimizer = new FunctionPassManager(this->_mod);
+
+    // Set up the optimizer pipeline.  Start with registering info about how the
+    // target lays out data structures.
+    if (this->_jit) {
+        optimizer->add(new DataLayoutPass(*this->_jit->getDataLayout()));
+    }
+    // Provide basic AliasAnalysis support for GVN.
+    optimizer->add(createBasicAliasAnalysisPass());
+    // Do simple "peephole" optimizations and bit-twiddling optzns.
+    optimizer->add(createInstructionCombiningPass());
+    // Reassociate expressions.
+    optimizer->add(createReassociatePass());
+    // Eliminate Common SubExpressions.
+    optimizer->add(createGVNPass());
+    // Simplify the control flow graph (deleting unreachable blocks, etc).
+    optimizer->add(createCFGSimplificationPass());
+
+    optimizer->doInitialization();
+    return optimizer;
+}
+
+
+void Builder::optimize(Function* f) {
+    if (this->_optimizer) {
+        this->_optimizer->run(*f);
+    }
+}

@@ -198,6 +198,8 @@ Function* FunctionAST::Codegen(Builder& b) {
         // Validate the generated code, checking for consistency.
         verifyFunction(*f);
 
+        b.optimize(f);
+
         return f;
     }
 
