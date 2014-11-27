@@ -61,9 +61,9 @@ Token Lexer::nextToken() {
     // Nombre
     if (isdigit(chr) || chr == '.') {
         // Partie entière
-        do {
+        while (isdigit(chr)) {
             this->eatChr();
-        } while (isdigit(chr));
+        }
 
         // Partie décimale
         if (chr == '.') {
