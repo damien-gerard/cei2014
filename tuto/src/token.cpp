@@ -1,11 +1,11 @@
 #include "../include/token.h"
 #include <sstream>
+#include <endian.h>
 
-std::string char2string(char c) {
-  std::stringstream ss;
-  ss.put(c);
-  return ss.str();
-}
+inline std::string char2string(char c);
+inline std::string multichar2string(uint16_t c);
+inline std::string multichar2string(uint32_t c);
+inline std::string multichar2string(uint64_t c);
 
 constexpr TokenType Token::END;
 constexpr TokenType Token::DEF;
@@ -27,7 +27,7 @@ Token::Token()
 : _type(&Token::NIL), _str("")
 {}
 Token::Token(const TokenType& type)
-: _type(&type), _str(char2string(type.sym()))
+: _type(&type), _str(multichar2string(type.multichr()))
 {}
 Token::Token(const TokenType& type, const std::string& str)
 : _type(&type), _str(str)
@@ -58,7 +58,7 @@ Token::operator int() const {
 
 
 std::ostream& operator<<(std::ostream& out, const Token& tok) {
-    return out << tok._type << "(\"" << tok.str() << "\")";
+    return out << *tok._type << "(\"" << tok.str() << "\")";
 }
 std::ostream& operator<<(std::ostream& out, const TokenType& tokType) {
   out << "Token::";
@@ -106,7 +106,7 @@ std::ostream& operator<<(std::ostream& out, const TokenType& tokType) {
       out << "NIL";
       break;
   default:
-      out << "'" << char2string(tokType.sym()) << "'";
+      out << "'" << multichar2string(tokType.multichr()) << "'";
   }
   return out;
 }
@@ -141,6 +141,55 @@ Token TokenType::operator()(const std::string& str) const {
     return Token(*this, str);
 }
 
-constexpr char TokenType::sym() {
-    return (this->_type < 0) ? -this->_type : this->_type;
+constexpr char TokenType::chr() const {
+    return this->_type;
+}
+constexpr unsigned int TokenType::multichr() const {
+    return this->_type;
+}
+
+
+
+
+
+std::string char2string(char c) {
+  char str[1+1] = {0};
+  str[0] = c;
+  return str;
+}
+
+std::string multichar2string(uint16_t mchr) {
+  mchr = htobe16(mchr);
+  char *in = &reinterpret_cast<char&>(mchr);
+  char out[sizeof(uint16_t)+1] = {0};
+  for (uint16_t i = 0, j = 0; i < sizeof(uint16_t); ++i) {
+    if (in[i]) {
+        out[j++] = in[i];
+    }
+  }
+  return out;
+}
+
+std::string multichar2string(uint32_t mchr) {
+  mchr = htobe32(mchr);
+  char *in = &reinterpret_cast<char&>(mchr);
+  char out[sizeof(uint32_t)+1] = {0};
+  for (uint32_t i = 0, j = 0; i < sizeof(uint32_t); ++i) {
+    if (in[i]) {
+        out[j++] = in[i];
+    }
+  }
+  return out;
+}
+
+std::string multichar2string(uint64_t mchr) {
+  mchr = htobe64(mchr);
+  char *in = &reinterpret_cast<char&>(mchr);
+  char out[sizeof(uint64_t)+1] = {0};
+  for (uint64_t i = 0, j = 0; i < sizeof(uint64_t); ++i) {
+    if (in[i]) {
+        out[j++] = in[i];
+    }
+  }
+  return out;
 }
