@@ -91,6 +91,17 @@ class CallAST : public ExprAST
         std::vector<ExprAST*> _args; // delete at destruction
 };
 
+class IfAST : public ExprAST
+{
+    public:
+        IfAST(ExprAST* condAST, ExprAST* thenAST, ExprAST* elseAST);
+        virtual ~IfAST();
+        virtual llvm::Value* Codegen(Builder&);
+    protected:
+    private:
+        ExprAST *_condAST, *_thenAST, *_elseAST;
+};
+
 
 class DefinitionAST : public AST
 {

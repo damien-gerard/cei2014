@@ -1,6 +1,7 @@
 #include "../include/parser.h"
 #include "../include/lexer.h"
 #include <typeinfo>
+#include <sstream>
 
 Parser::Parser(Lexer& lex)
 : _lexer(lex)
@@ -13,9 +14,19 @@ Parser::Parser(Lexer& lex)
     this->eatToken();
 }
 
-Token Parser::eatToken() {
+Token* Parser::eatToken() {
     this->_tok = this->_lexer.nextToken();
-    return this->_tok;
+    return &this->_tok;
+}
+
+Token* Parser::eatToken(const TokenType& type) {
+    if (this->_tok != type) {
+      std::stringstream ss;
+      ss << "Unexpected token " << this->_tok << ", expected " << type;
+      return AST::Error<Token>(ss.str());
+    }
+    this->_tok = this->_lexer.nextToken();
+    return &this->_tok;
 }
 
 
@@ -96,6 +107,32 @@ ExprAST* Parser::identifier() {
     return new CallAST(idName, args);
 }
 
+ExprAST* Parser::ifexpr() {
+    ExprAST *ifAST, *thenAST, *elseAST;
+    // Consomme le token IF
+    this->eatToken();
+
+    // Parse la condition
+    ifAST = this->expression();
+    if (!ifAST) return nullptr;
+
+    // Consomme le token THEN
+    if (!this->eatToken(Token::THEN)) return nullptr;
+
+    // Parse l'expression THEN
+    thenAST = this->expression();
+    if (!thenAST) return nullptr;
+
+    // Consomme le token ELSE
+    if (!this->eatToken(Token::ELSE)) return nullptr;
+
+    // Parse l'expression ELSE
+    elseAST = this->expression();
+    if (!elseAST) return nullptr;
+
+    return new IfAST(ifAST, thenAST, elseAST);
+}
+
 
 ExprAST* Parser::expression() {
     ExprAST *LHS = this->primary();
@@ -139,6 +176,8 @@ ExprAST* Parser::primary() {
         return this->number();
     case Token::LEFTP:
         return this->parenthesis();
+    case Token::IF:
+        return this->ifexpr();
     default:
         return AST::Error<ExprAST>("unknown token when expecting an expression");
     }
@@ -157,7 +196,7 @@ PrototypeAST* Parser::prototype() {
     }
 
     std::vector<std::string> argNames;
-    while (this->eatToken() == Token::ID) {
+    while (*this->eatToken() == Token::ID) {
         argNames.push_back(this->_tok.str());
     }
 

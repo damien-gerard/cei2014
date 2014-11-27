@@ -27,6 +27,7 @@ class TokenType
         Token operator()(const std::string&) const;
         constexpr operator int() {return this->_type;}
         constexpr char sym();
+        friend std::ostream& operator<<(std::ostream& out, const TokenType& tokType);
     private:
         const int _type;
 };
@@ -58,15 +59,18 @@ class Token
         static constexpr TokenType COMMA{','};
         static constexpr TokenType SEMICOL{';'};
         static constexpr TokenType OP{'o'};
+        static constexpr TokenType IF{'f'};
+        static constexpr TokenType THEN{'t'};
+        static constexpr TokenType ELSE{'l'};
         static constexpr TokenType NIL{0};
 
         friend class TokenType;
+        friend std::ostream& operator<<(std::ostream& out, const Token& tok);
     protected:
     private:
         const TokenType *_type;
         std::string _str;
 };
 
-std::ostream& operator<<(std::ostream& out, const Token& tok);
 
 #endif // TOKEN_H

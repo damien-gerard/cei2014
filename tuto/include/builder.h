@@ -23,6 +23,7 @@ class Builder
         friend llvm::Value* VariableAST::Codegen(Builder&);
         friend llvm::Value* OpAST::Codegen(Builder&);
         friend llvm::Value* CallAST::Codegen(Builder&);
+        friend llvm::Value* IfAST::Codegen(Builder&);
         friend llvm::Function* PrototypeAST::Codegen(Builder&);
         friend llvm::Function* FunctionAST::Codegen(Builder&);
     protected:

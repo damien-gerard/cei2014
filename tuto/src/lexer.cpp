@@ -51,6 +51,9 @@ Token Lexer::nextToken() {
         // Si _str est un mot clé
         if (str == "def") return Token::DEF;
         if (str == "extern") return Token::EXTERN;
+        if (str == "if") return Token::IF;
+        if (str == "then") return Token::THEN;
+        if (str == "else") return Token::ELSE;
 
         return Token::ID(str);
     }

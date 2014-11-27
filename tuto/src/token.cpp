@@ -17,6 +17,9 @@ constexpr TokenType Token::RIGHTP;
 constexpr TokenType Token::COMMA;
 constexpr TokenType Token::SEMICOL;
 constexpr TokenType Token::OP;
+constexpr TokenType Token::IF;
+constexpr TokenType Token::THEN;
+constexpr TokenType Token::ELSE;
 constexpr TokenType Token::NIL;
 
 
@@ -55,8 +58,11 @@ Token::operator int() const {
 
 
 std::ostream& operator<<(std::ostream& out, const Token& tok) {
+    return out << tok._type << "(\"" << tok.str() << "\")";
+}
+std::ostream& operator<<(std::ostream& out, const TokenType& tokType) {
   out << "Token::";
-  switch (tok) {
+  switch (tokType) {
   case Token::END:
       out << "END";
       break;
@@ -87,13 +93,22 @@ std::ostream& operator<<(std::ostream& out, const Token& tok) {
   case Token::OP:
       out << "OP";
       break;
+  case Token::IF:
+      out << "IF";
+      break;
+  case Token::THEN:
+      out << "THEN";
+      break;
+  case Token::ELSE:
+      out << "ELSE";
+      break;
   case Token::NIL:
       out << "NIL";
       break;
   default:
-      out << "'" << tok.chr() << "'";
+      out << "'" << char2string(tokType.sym()) << "'";
   }
-  return out << "(\"" << tok.str() << "\")";
+  return out;
 }
 
 

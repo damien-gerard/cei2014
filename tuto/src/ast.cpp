@@ -116,6 +116,75 @@ Value* CallAST::Codegen(Builder& b) {
 
 
 /**
+ * IfAST
+ */
+IfAST::IfAST(ExprAST* condAST, ExprAST* thenAST, ExprAST* elseAST)
+: _condAST(condAST), _thenAST(thenAST), _elseAST(elseAST)
+{}
+IfAST::~IfAST()
+{
+    delete this->_condAST;
+    delete this->_thenAST;
+    delete this->_elseAST;
+}
+
+Value* IfAST::Codegen(Builder& b) {
+    IRBuilder<>& builder = b.irbuilder();
+
+    Value *condV = this->_condAST->Codegen(b);
+
+    if (!condV) return nullptr;
+
+    // Convert condition to a bool by comparing equal to 0.0.
+    condV = builder.CreateFCmpONE(
+            condV,
+            ConstantFP::get(getGlobalContext(), APFloat(0.0)),
+            "ifcond");
+
+    Function *f = builder.GetInsertBlock()->getParent();
+
+    // Create blocks for the then and else cases.  Insert the 'then' block at the
+    // end of the function.
+    BasicBlock *thenBB = BasicBlock::Create(getGlobalContext(), "then", f);
+    BasicBlock *elseBB = BasicBlock::Create(getGlobalContext(), "else");
+    BasicBlock *mergeBB = BasicBlock::Create(getGlobalContext(), "ifcont");
+
+    builder.CreateCondBr(condV, thenBB, elseBB);
+
+    // Emit then value.
+    builder.SetInsertPoint(thenBB);
+
+    Value *thenV = this->_thenAST->Codegen(b);
+    if (!thenV) return nullptr;
+
+    builder.CreateBr(mergeBB);
+    // Codegen of 'Then' can change the current block, update ThenBB for the PHI.
+    thenBB = builder.GetInsertBlock();
+
+    // Emit else block.
+    f->getBasicBlockList().push_back(elseBB);
+    builder.SetInsertPoint(elseBB);
+
+    Value *elseV = this->_elseAST->Codegen(b);
+    if (!elseV) return nullptr;
+
+    builder.CreateBr(mergeBB);
+    // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
+    elseBB = builder.GetInsertBlock();
+
+    // Emit merge block.
+    f->getBasicBlockList().push_back(mergeBB);
+    builder.SetInsertPoint(mergeBB);
+    PHINode *PN = builder.CreatePHI(Type::getDoubleTy(getGlobalContext()), 2,
+                                    "iftmp");
+
+    PN->addIncoming(thenV, thenBB);
+    PN->addIncoming(elseV, elseBB);
+    return PN;
+}
+
+
+/**
  * DefinitionAST
  */
 
