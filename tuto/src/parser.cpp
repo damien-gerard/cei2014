@@ -58,12 +58,8 @@ ExprAST* Parser::parenthesis() {
 
     if (!V) return nullptr; // Propage l'erreur
 
-    if (this->_tok != Token::RIGHTP) {
-        return AST::Error<ExprAST>("expected ')'");
-    }
+    if (!this->eatToken(Token::RIGHTP)) return nullptr;
 
-    // Consomme la parenthèse fermante
-    this->eatToken();
     return V;
 }
 
@@ -93,14 +89,11 @@ ExprAST* Parser::identifier() {
                 break;
             }
 
-            if (this->_tok != Token::COMMA) {
-                return AST::Error<ExprAST>("Expected ')' or ',' in argument list");
-            }
-
-            this->eatToken();
+            if (!this->eatToken(Token::COMMA)) return nullptr;
         }
     }
 
+    // Consomme la parenthèse fermante
     this->eatToken();
 
 
@@ -184,27 +177,18 @@ ExprAST* Parser::primary() {
 }
 
 PrototypeAST* Parser::prototype() {
-    if (this->_tok != Token::ID) {
-        return AST::Error<PrototypeAST>("Expected function name in prototype");
-    }
-
     std::string fnName = this->_tok.str();
-    this->eatToken();
+    if (!this->eatToken(Token::ID)) return nullptr;
 
-    if (this->_tok != Token::LEFTP) {
-        return AST::Error<PrototypeAST>("Expected '(' in prototype");
-    }
+    if (!this->eatToken(Token::LEFTP)) return nullptr;
 
     std::vector<std::string> argNames;
-    while (*this->eatToken() == Token::ID) {
+    while (this->_tok == Token::ID) {
         argNames.push_back(this->_tok.str());
+        this->eatToken();
     }
 
-    if (this->_tok != Token::RIGHTP) {
-        return AST::Error<PrototypeAST>("Expected ')' in prototype");
-    }
-
-    this->eatToken();
+    if (!this->eatToken(Token::RIGHTP)) return nullptr;
 
     return new PrototypeAST(fnName, argNames);
 }
