@@ -3,6 +3,7 @@
 
 
 #include <string>
+#include <cstdlib>
 /**
  * Token peut s'utiliser exactement comme un enum class
  * Mais possède des attributs ainsi que des méthodes

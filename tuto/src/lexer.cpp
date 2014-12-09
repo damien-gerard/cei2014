@@ -1,6 +1,7 @@
 
 #include "../include/token.h"
 #include "../include/lexer.h"
+#include <cstdio>
 
 
 Lexer::Lexer(std::istream& in)

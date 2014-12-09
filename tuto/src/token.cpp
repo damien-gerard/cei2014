@@ -1,6 +1,6 @@
 #include "../include/token.h"
 #include <sstream>
-#include <endian.h>
+//#include <endian.h>
 
 inline std::string char2string(char c);
 inline std::string multichar2string(uint16_t c);
@@ -159,7 +159,7 @@ std::string char2string(char c) {
 }
 
 std::string multichar2string(uint16_t mchr) {
-  mchr = htobe16(mchr);
+  //mchr = htobe16(mchr);
   char *in = &reinterpret_cast<char&>(mchr);
   char out[sizeof(uint16_t)+1] = {0};
   for (uint16_t i = 0, j = 0; i < sizeof(uint16_t); ++i) {
@@ -171,7 +171,7 @@ std::string multichar2string(uint16_t mchr) {
 }
 
 std::string multichar2string(uint32_t mchr) {
-  mchr = htobe32(mchr);
+  //mchr = htobe32(mchr);
   char *in = &reinterpret_cast<char&>(mchr);
   char out[sizeof(uint32_t)+1] = {0};
   for (uint32_t i = 0, j = 0; i < sizeof(uint32_t); ++i) {
@@ -183,7 +183,7 @@ std::string multichar2string(uint32_t mchr) {
 }
 
 std::string multichar2string(uint64_t mchr) {
-  mchr = htobe64(mchr);
+  //mchr = htobe64(mchr);
   char *in = &reinterpret_cast<char&>(mchr);
   char out[sizeof(uint64_t)+1] = {0};
   for (uint64_t i = 0, j = 0; i < sizeof(uint64_t); ++i) {
