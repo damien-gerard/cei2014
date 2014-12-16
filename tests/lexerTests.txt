@@ -1,0 +1,6 @@
++ lexerTests/test1.4d
++ lexerTests/test2.4d
++ lexerTests/test3.4d
++ lexerTests/test4.4d
+- lexerTests/stringError.4d
+#

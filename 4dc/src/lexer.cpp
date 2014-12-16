@@ -156,7 +156,7 @@ Token Lexer::eatOpToken()
 
 Token Lexer::eatSingleLineComment()
 {
-  Logger::warning << "Comments not stored" << std::endl;
+  Logger::warning << "Lex Warning: Comments not stored" << std::endl;
   while (!isEndLine(this->_chr)) {
     if (this->_chr == EOF) {
       return TokenType::ENDF;
@@ -169,7 +169,7 @@ Token Lexer::eatSingleLineComment()
 
 Token Lexer::eatMultilineLineComment()
 {
-  Logger::warning << "Comments not stored" << std::endl;
+  Logger::warning << "Lex Warning: Comments not stored" << std::endl;
   int chr0, chr1;
   chr1 = this->eatChr();
   do {

@@ -1,0 +1,80 @@
+#! /bin/bash
+
+default_program="../4dc/bin/Debug/4dc"
+
+SUCCESS="\e[1;32mSUCCESS "
+   FAIL="\e[1;31mERROR   "
+
+
+if [[ $# == 1 ]]
+then
+  testsfile="$1"
+  program="$default_program"
+elif [[ $# == 2 ]]
+then
+  program="$1"
+  testsfile="$2"
+fi
+
+
+if [ -z "$program" ] || [ -z "$testsfile" ]
+then
+  echo "USAGE: $0 [PROGRAM=$default_program] TESTSFILE[.txt]" >&2
+  exit 1
+fi
+
+function readFile {
+  file="$1"
+  if ! [ -e "$file" ] && [ -e "$file".txt ]
+  then
+    file="$1".txt
+  fi
+  (cat "$file" | sed 's/\r$//' ; echo) | while read line
+  do
+    testLine "$line"
+  done
+}
+
+function testLine {
+  l="$(echo $1 | sed 's/^.\(\s\)*//')"
+  if (echo "$1" | grep '^+') &>/dev/null
+  then
+    shallPassTest "$l"
+  elif (echo "$1" | grep '^-') &>/dev/null
+  then
+    shallFailTest "$l"
+  elif (echo "$1" | grep '^i') &>/dev/null
+  then
+    readFile "$l"
+  elif ! (echo "$1" | grep '^#' &>/dev/null) && ! (echo "$1" | grep '^\(\s\)*$' &>/dev/null)
+  then
+    echo "Malformed Line \"$1\" -> ignored" >&2
+  fi
+}
+
+function shallPassTest {
+  echo -e "\e[1;30mCommand: '\e[0;30;47m$program $1\e[1;30;49m' shall \e[39;42mpass\e[0m"
+  if executeLine "$1"
+  then
+    echo -e "${SUCCESS}Test successfully passed\e[0m"
+  else
+    echo -e "${FAIL}Test unexpectedly failed\e[0m"
+  fi
+}
+
+function shallFailTest {
+  echo -e "\e[1;30mCommand: '\e[0;30;47m$program $1\e[1;30;49m' shall \e[39;41mfail\e[0m"
+  if executeLine "$1"
+  then
+    echo -e "${FAIL}Test unexpectedly passed\e[0m"
+  else
+    echo -e "${SUCCESS}Test successfully failed\e[0m"
+  fi
+}
+
+function executeLine {
+  "$program" $1 2>&1 1>/dev/null </dev/null | sed "/warning/I{s/^/`printf "\e[39;43m"`/};/error/I{s/^/`printf "\e[39;41m"`/};s/^/        |`printf "\e[1;30m"`/;s/$/`printf "\e[0m"`/" 
+  return ${PIPESTATUS[0]}
+}
+
+readFile "$testsfile"
