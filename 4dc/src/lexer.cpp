@@ -2,6 +2,7 @@
 #include "../include/lexer.h"
 #include <cstdio>
 #include <cassert>
+#include "../include/util/logger.h"
 #include "../include/util/util.h"
 
 /**
@@ -99,6 +100,7 @@ Token Lexer::eatStringToken()
   this->_str = "";
   while (this->_chr != '"') {
     if (this->_chr == EOF) {
+      Logger::error << "Lex Error: Expected '\"' but found EOF" << std::endl;
       exit(EXIT_FAILURE);
       return TokenType::ENDF;
     }
@@ -154,6 +156,7 @@ Token Lexer::eatOpToken()
 
 Token Lexer::eatSingleLineComment()
 {
+  Logger::warning << "Comments not stored" << std::endl;
   while (!isEndLine(this->_chr)) {
     if (this->_chr == EOF) {
       return TokenType::ENDF;
@@ -166,6 +169,7 @@ Token Lexer::eatSingleLineComment()
 
 Token Lexer::eatMultilineLineComment()
 {
+  Logger::warning << "Comments not stored" << std::endl;
   int chr0, chr1;
   chr1 = this->eatChr();
   do {
