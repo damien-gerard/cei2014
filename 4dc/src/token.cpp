@@ -91,6 +91,24 @@ std::ostream& operator<<(std::ostream& out, TokenType tokType)
   case TokenType::ENDIF:
     out << "ENDIF";
     break;
+  case TokenType::FOR:
+    out << "FOR";
+    break;
+  case TokenType::ENDFOR:
+    out << "ENDFOR";
+    break;
+  case TokenType::WHILE:
+    out << "WHILE";
+    break;
+  case TokenType::ENDWHILE:
+    out << "ENDWHILE";
+    break;
+  case TokenType::REPEAT:
+    out << "REPEAT";
+    break;
+  case TokenType::UNTIL:
+    out << "UNTIL";
+    break;
   case TokenType::OP:
     out << "OP";
     break;
@@ -135,6 +153,18 @@ std::string tokenTypeToString(TokenType tokType) {
     return "Else";
   case TokenType::ENDIF:
     return "End If";
+  case TokenType::FOR:
+    return "For";
+  case TokenType::ENDFOR:
+    return "End for";
+  case TokenType::WHILE:
+    return "While";
+  case TokenType::ENDWHILE:
+    return "End while";
+  case TokenType::REPEAT:
+    return "Repeat";
+  case TokenType::UNTIL:
+    return "Until";
   case TokenType::OP:
     return "OP";
   case TokenType::NIL:

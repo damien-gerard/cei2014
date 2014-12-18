@@ -1,4 +1,4 @@
 if()
-	blu = 4
+	blu := 4
 	//trololo
 end if

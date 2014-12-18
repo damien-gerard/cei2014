@@ -3,4 +3,8 @@
 + lexerTests/test3.4d
 + lexerTests/test4.4d
 - lexerTests/stringError.4d
++ lexerTests/testFor.4d
++ lexerTests/testFor2.4d
++ lexerTests/testRepeat.4d
++ lexerTests/testWhile.4d
 #

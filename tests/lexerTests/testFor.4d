@@ -1,0 +1,3 @@
+For(vCounter;1;100)
+  //Do something
+End for

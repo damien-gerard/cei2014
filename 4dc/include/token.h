@@ -28,7 +28,16 @@ enum class TokenType
   IF,       // If
   ELSE,     // Else
   ENDIF,    // End If
-
+  
+  FOR,      // For
+  ENDFOR,   // End for
+  
+  WHILE,    // While
+  ENDWHILE, // End while
+  
+  REPEAT,   // Repeat
+  UNTIL,    // Until
+  
   OP,       // operators
 
   NIL       // undefined token

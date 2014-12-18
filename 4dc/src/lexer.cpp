@@ -69,7 +69,16 @@ Token Lexer::eatIdToken()
   if (this->_str == "if") return TokenType::IF;
   if (this->_str == "else") return TokenType::ELSE;
   if (this->_str == "end if") return TokenType::ENDIF;
+  
+  if (this->_str == "for") return TokenType::FOR;
+  if (this->_str == "end for") return TokenType::ENDFOR;
 
+  if (this->_str == "while") return TokenType::WHILE;
+  if (this->_str == "end while") return TokenType::ENDWHILE;
+  
+  if (this->_str == "repeat") return TokenType::REPEAT;
+  if (this->_str == "until") return TokenType::UNTIL;
+  
   return Token(TokenType::ID, this->_str);
 }
 
