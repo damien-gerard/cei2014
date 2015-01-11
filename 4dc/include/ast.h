@@ -106,15 +106,15 @@ class ExprAST : public AST
   private:
 };
 
-class NumberAST : public ExprAST
+class LitteralAST : public ExprAST
 {
   public:
-    NumberAST(double);
-    virtual ~NumberAST();
+    LitteralAST(const std::string& val);
+    virtual ~LitteralAST();
     //virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
-    double _val;
+    std::string _val;
 };
 
 class VariableAST : public ExprAST

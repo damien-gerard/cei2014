@@ -157,14 +157,14 @@ ExprAST::~ExprAST() = default;
 
 
 /**
- * NumberAST
+ * LitteralAST
  */
-NumberAST::NumberAST(double n)
-  : _val(n)
+LitteralAST::LitteralAST(const std::string& val)
+  : _val(val)
 {}
-NumberAST::~NumberAST() = default;
+LitteralAST::~LitteralAST() = default;
 /*
-Value* NumberAST::Codegen(Builder& b)
+Value* LitteralAST::Codegen(Builder& b)
 {
   return ConstantFP::get(getGlobalContext(), APFloat(this->_val));
 }
