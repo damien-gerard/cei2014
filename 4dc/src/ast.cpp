@@ -1,19 +1,45 @@
 #include "../include/ast.h"
 #include <iostream>
+#include <sstream>
+#include "../include/util/util.h"
 //#include "../include/builder.h"
 
+using namespace std;
 //using namespace llvm;
+
+const string NAMED_PREFIX_BEGIN   = "> ";
+const string NAMED_PREFIX_MIDDLE  = "| ";
+const string NAMED_PREFIX_END     = "  ";
+const string PREFIX_BEGIN         = "+> ";
+const string PREFIX_MIDDLE        = "|  ";
+const string PREFIX_END           = "   ";
 
 /**
  * AST
  */
- AST::~AST() = default;
+AST::~AST() = default;
+
+string AST::toString(const std::string& firstPrefix, const std::string& prefix) const
+{
+  return this->_toString(firstPrefix, prefix);
+}
+
+ostream& operator<<(ostream& out, const AST& ast)
+{
+  return out << ast.toString("", "");
+}
 
 /**
  * BlocAST
  */
-BlocAST::BlocAST(StatementAST* ast)
-  : _statements(1, ast)
+BlocAST::BlocAST(StatementAST* statement)
+  : BlocAST({statement})
+{}
+BlocAST::BlocAST(std::initializer_list<StatementAST*> statements)
+  : _statements(statements.begin(), statements.end())
+{}
+BlocAST::BlocAST(const std::vector<StatementAST*>& statements)
+  : _statements(statements)
 {}
 
 BlocAST::~BlocAST()
@@ -21,6 +47,23 @@ BlocAST::~BlocAST()
   for (auto& statement : this->_statements) {
     delete statement;
   }
+}
+
+string BlocAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  string nextFirstPrefix, nextPrefix;
+  nextFirstPrefix = prefix + PREFIX_BEGIN;
+  nextPrefix = prefix + PREFIX_MIDDLE;
+  stringstream ss;
+  ss << firstPrefix << "Bloc" << endl;
+  int length = this->_statements.size();
+  for (int i = 0 ; i < length ; ++i) {
+    if (i + 1 == length) {
+      nextPrefix = prefix + PREFIX_END;
+    }
+    ss << this->_statements[i]->toString(nextFirstPrefix, nextPrefix);
+  }
+  return ss.str();
 }
 
 /**
@@ -40,6 +83,17 @@ StatementExprAST::~StatementExprAST()
   delete this->_expr;
 }
 
+string StatementExprAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  string nextFirstPrefix, nextPrefix;
+  nextFirstPrefix = prefix + PREFIX_BEGIN;
+  nextPrefix = prefix + PREFIX_END;
+  stringstream ss;
+  ss  << firstPrefix << "Statement::Expression" << endl
+      << this->_expr->toString(nextFirstPrefix, nextPrefix);
+  return ss.str();
+}
+
 /**
  * IfAST
  */
@@ -55,6 +109,25 @@ IfAST::~IfAST()
   delete this->_condAST;
   delete this->_thenAST;
   if (this->_elseAST) delete this->_elseAST;
+}
+
+string IfAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  string nextPrefix = prefix + NAMED_PREFIX_MIDDLE;
+  stringstream ss;
+  ss  << firstPrefix << "Statement::IF" << endl
+      << this->_condAST->toString(prefix + "+[IF]" + NAMED_PREFIX_BEGIN, nextPrefix + "     ");
+
+  if (!this->_elseAST) {
+    nextPrefix = prefix + NAMED_PREFIX_END;
+  }
+  ss  << this->_thenAST->toString(prefix + "+[THEN]" + NAMED_PREFIX_BEGIN, nextPrefix + "       ");
+
+  if (this->_elseAST) {
+    nextPrefix = prefix + NAMED_PREFIX_END;
+    ss<< this->_elseAST->toString(prefix + "+[ELSE]" + NAMED_PREFIX_BEGIN, nextPrefix + "       ");
+  }
+  return ss.str();
 }
 
 /*
@@ -136,6 +209,21 @@ forAST::~forAST()
   delete this->_loopAST;
 }
 
+string forAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  string nextFirstPrefix, nextPrefix;
+  nextFirstPrefix = prefix + PREFIX_BEGIN;
+  nextPrefix = prefix + PREFIX_MIDDLE;
+  stringstream ss;
+  ss  << firstPrefix << "Statement::FOR" << endl
+      << this->_beginAST->toString(nextFirstPrefix, nextPrefix)
+      << this->_condAST ->toString(nextFirstPrefix, nextPrefix)
+      << this->_endAST  ->toString(nextFirstPrefix, nextPrefix);
+  nextPrefix = prefix + PREFIX_END;
+  ss  << this->_loopAST ->toString(nextFirstPrefix, nextPrefix);
+  return ss.str();
+}
+
 /**
  * whileAST
  */
@@ -149,6 +237,17 @@ whileAST::~whileAST()
   delete this->_loopAST;
 }
 
+string whileAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  string nextPrefix = prefix + PREFIX_MIDDLE;
+  stringstream ss;
+  ss  << firstPrefix << "Statement::WHILE" << endl
+      << this->_condAST ->toString(prefix + "+[WHILE]" + NAMED_PREFIX_BEGIN, nextPrefix + "        ");
+  nextPrefix = prefix + PREFIX_END;
+  ss  << this->_loopAST ->toString(prefix + "+[DO]" + NAMED_PREFIX_BEGIN, nextPrefix + "     ");
+  return ss.str();
+}
+
 
 /**
  * ExprAST
@@ -157,14 +256,21 @@ ExprAST::~ExprAST() = default;
 
 
 /**
- * LitteralAST
+ * LiteralAST
  */
-LitteralAST::LitteralAST(const std::string& val)
+LiteralAST::LiteralAST(const std::string& val)
   : _val(val)
 {}
-LitteralAST::~LitteralAST() = default;
+LiteralAST::~LiteralAST() = default;
+
+string LiteralAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  stringstream ss;
+  ss  << firstPrefix << "Expression::Literal " << this->_val << endl;
+  return ss.str();
+}
 /*
-Value* LitteralAST::Codegen(Builder& b)
+Value* LiteralAST::Codegen(Builder& b)
 {
   return ConstantFP::get(getGlobalContext(), APFloat(this->_val));
 }
@@ -189,6 +295,13 @@ LocalVariableAST::LocalVariableAST(const std::string& name)
 {}
 LocalVariableAST::~LocalVariableAST() = default;
 
+string LocalVariableAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  stringstream ss;
+  ss  << firstPrefix << "Expression::Variable $" << this->_name << endl;
+  return ss.str();
+}
+
 
 /**
  * GlobaleVariableAST
@@ -197,6 +310,13 @@ GlobaleVariableAST::GlobaleVariableAST(const std::string& name)
   : _name(name)
 {}
 GlobaleVariableAST::~GlobaleVariableAST() = default;
+
+string GlobaleVariableAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  stringstream ss;
+  ss  << firstPrefix << "Expression::Variable " << this->_name << endl;
+  return ss.str();
+}
 
 
 /**
@@ -207,17 +327,37 @@ PersistentVariableAST::PersistentVariableAST(const std::string& name)
 {}
 PersistentVariableAST::~PersistentVariableAST() = default;
 
+string PersistentVariableAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  stringstream ss;
+  ss  << firstPrefix << "Expression::Variable <>" << this->_name << endl;
+  return ss.str();
+}
+
 
 /**
  * OpAST
  */
-OpAST::OpAST(char op, ExprAST* lhs, ExprAST* rhs)
-  : _chr(op), _lhs(lhs), _rhs(rhs)
+OpAST::OpAST(const std::string& op, ExprAST* lhs, ExprAST* rhs)
+  : _str(op), _lhs(lhs), _rhs(rhs)
 {}
 OpAST::~OpAST()
 {
   delete this->_lhs;
   delete this->_rhs;
+}
+
+string OpAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  string nextFirstPrefix, nextPrefix;
+  nextFirstPrefix = prefix + PREFIX_BEGIN;
+  nextPrefix = prefix + PREFIX_MIDDLE;
+  stringstream ss;
+  ss  << firstPrefix << "Expression::OP " << this->_str << endl
+      << this->_lhs->toString(nextFirstPrefix, nextPrefix);
+  nextPrefix = prefix + PREFIX_END;
+  ss  << this->_rhs->toString(nextFirstPrefix, nextPrefix);
+  return ss.str();
 }
 /*
 Value* OpAST::Codegen(Builder& b)
@@ -262,6 +402,23 @@ CallAST::~CallAST()
   }
   this->_args.clear();
 }
+
+string CallAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  string nextFirstPrefix, nextPrefix;
+  nextFirstPrefix = prefix + PREFIX_BEGIN;
+  nextPrefix = prefix + PREFIX_MIDDLE;
+  stringstream ss;
+  ss << firstPrefix << "Expression::Call " << this->_name << endl;
+  int length = this->_args.size();
+  for (int i ; i < length ; ++i) {
+    if (i + 1 == length) {
+      nextPrefix = prefix + PREFIX_END;
+    }
+    ss << this->_args[i]->toString(nextFirstPrefix, nextPrefix);
+  }
+  return ss.str();
+}
 /*
 Value* CallAST::Codegen(Builder& b)
 {
@@ -304,6 +461,18 @@ PrototypeAST::PrototypeAST(const std::string& name, const std::vector<std::strin
   : _name(name), _args(args)
 {}
 PrototypeAST::~PrototypeAST() = default;
+
+string PrototypeAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  string nextFirstPrefix, nextPrefix;
+  nextFirstPrefix = prefix + PREFIX_BEGIN;
+  nextPrefix = prefix + PREFIX_END;
+  stringstream ss;
+  ss  << firstPrefix << "Definition::Prototype " << this->_name << "(";
+  Util::join(ss, this->_args, ", ");
+  ss  << ")" << endl;
+  return ss.str();
+}
 /*
 Function* PrototypeAST::Codegen(Builder& b)
 {
@@ -356,6 +525,19 @@ FunctionAST::FunctionAST(PrototypeAST* proto, BlocAST* body)
 FunctionAST::~FunctionAST()
 {
   delete this->_body;
+}
+
+string FunctionAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  string nextFirstPrefix, nextPrefix;
+  nextFirstPrefix = prefix + PREFIX_BEGIN;
+  nextPrefix = prefix + PREFIX_MIDDLE;
+  stringstream ss;
+  ss  << firstPrefix << "Definition::Function " << endl
+      << this->_proto->toString(nextFirstPrefix, nextPrefix);
+  nextPrefix = prefix + PREFIX_END;
+  ss  << this->_body->toString(nextFirstPrefix, nextPrefix);
+  return ss.str();
 }
 /*
 Function* FunctionAST::Codegen(Builder& b)

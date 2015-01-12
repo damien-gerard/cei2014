@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <initializer_list>
 //#include "llvm-dependencies.h"
 
 class Builder;
@@ -12,10 +13,15 @@ class AST
 {
   public:
     virtual ~AST();
+
+    std::string toString(const std::string& firstPrefix, const std::string& prefix) const;
+
     template<class T = AST>
     static T* Error(const std::string& msg);
+    friend std::ostream& operator<<(std::ostream& out, const AST& ast);
   protected:
   private:
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
 
 
@@ -30,12 +36,15 @@ class BlocAST : public AST
 {
   public:
     BlocAST(StatementAST*);
+    BlocAST(std::initializer_list<StatementAST*>);
     BlocAST(const std::vector<StatementAST*>&);
     virtual ~BlocAST();
     //virtual llvm::???* Codegen(Builder&) = 0;
   protected:
   private:
     std::vector<StatementAST*> _statements; // delete at destruction
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 class StatementAST : public AST
@@ -45,6 +54,7 @@ class StatementAST : public AST
     //virtual llvm::???* Codegen(Builder&) = 0;
   protected:
   private:
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
 
 class ExprAST;
@@ -57,6 +67,8 @@ class StatementExprAST : public StatementAST
   protected:
   private:
     ExprAST* _expr; // delete at destruction
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 class IfAST : public StatementAST
@@ -70,6 +82,8 @@ class IfAST : public StatementAST
   private:
     ExprAST *_condAST; // delete at destruction
     BlocAST *_thenAST, *_elseAST; // delete at destruction
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 class forAST : public StatementAST
@@ -83,6 +97,8 @@ class forAST : public StatementAST
     StatementAST *_beginAST, *_endAST;
     ExprAST *_condAST;
     BlocAST *_loopAST;
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 class whileAST : public StatementAST
@@ -95,6 +111,8 @@ class whileAST : public StatementAST
   private:
     ExprAST *_condAST;
     BlocAST *_loopAST;
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 class ExprAST : public AST
@@ -104,17 +122,20 @@ class ExprAST : public AST
     //virtual llvm::Value* Codegen(Builder&) = 0;
   protected:
   private:
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
 
-class LitteralAST : public ExprAST
+class LiteralAST : public ExprAST
 {
   public:
-    LitteralAST(const std::string& val);
-    virtual ~LitteralAST();
+    LiteralAST(const std::string& val);
+    virtual ~LiteralAST();
     //virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     std::string _val;
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 class VariableAST : public ExprAST
@@ -125,6 +146,7 @@ class VariableAST : public ExprAST
     //virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
 
 class LocalVariableAST : public ExprAST
@@ -136,6 +158,8 @@ class LocalVariableAST : public ExprAST
   protected:
   private:
     std::string _name;
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 class GlobaleVariableAST : public ExprAST
@@ -147,6 +171,8 @@ class GlobaleVariableAST : public ExprAST
   protected:
   private:
     std::string _name;
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 class PersistentVariableAST : public ExprAST
@@ -158,19 +184,23 @@ class PersistentVariableAST : public ExprAST
   protected:
   private:
     std::string _name;
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 
 class OpAST : public ExprAST
 {
   public:
-    OpAST(char op, ExprAST* lhs, ExprAST* rhs);
+    OpAST(const std::string& op, ExprAST* lhs, ExprAST* rhs);
     virtual ~OpAST();
     //virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
-    char _chr;
+    std::string _str;
     ExprAST *_lhs, *_rhs; // delete at destruction
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 class CallAST : public ExprAST
@@ -183,6 +213,8 @@ class CallAST : public ExprAST
   private:
     std::string _name;
     std::vector<ExprAST*> _args; // delete at destruction
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 
@@ -193,6 +225,7 @@ class DefinitionAST : public AST
     //virtual llvm::Function* Codegen(Builder&) = 0;
   protected:
   private:
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
 
 class PrototypeAST : public DefinitionAST
@@ -205,6 +238,8 @@ class PrototypeAST : public DefinitionAST
   private:
     std::string _name;
     std::vector<std::string> _args;
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 class FunctionAST : public DefinitionAST
@@ -217,6 +252,8 @@ class FunctionAST : public DefinitionAST
   private:
     PrototypeAST* _proto; // keep at destruction
     BlocAST* _body; // delete at destruction
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
 
