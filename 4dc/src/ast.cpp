@@ -197,15 +197,16 @@ Value* IfAST::Codegen(Builder& b)
 /**
  * forAST
  */
-forAST::forAST(StatementAST* beginAST, ExprAST* condAST, StatementAST* endAST, BlocAST* loopAST)
-  : _beginAST(beginAST), _endAST(endAST), _condAST(condAST), _loopAST(loopAST)
+forAST::forAST(VariableAST* varialbeAST, ExprAST* beginAST, ExprAST* endAST, ExprAST* incrementAST, BlocAST* loopAST)
+  : _varialbeAST(varialbeAST), _beginAST(beginAST), _endAST(endAST), _incrementAST(incrementAST), _loopAST(loopAST)
 {}
 
 forAST::~forAST()
 {
+  delete this->_varialbeAST;
   delete this->_beginAST;
   delete this->_endAST;
-  delete this->_condAST;
+  delete this->_incrementAST;
   delete this->_loopAST;
 }
 
@@ -216,9 +217,10 @@ string forAST::_toString(const string& firstPrefix, const string& prefix) const
   nextPrefix = prefix + PREFIX_MIDDLE;
   stringstream ss;
   ss  << firstPrefix << "Statement::FOR" << endl
+      << this->_varialbeAST->toString(nextFirstPrefix, nextPrefix)
       << this->_beginAST->toString(nextFirstPrefix, nextPrefix)
-      << this->_condAST ->toString(nextFirstPrefix, nextPrefix)
-      << this->_endAST  ->toString(nextFirstPrefix, nextPrefix);
+      << this->_endAST ->toString(nextFirstPrefix, nextPrefix)
+      << this->_incrementAST  ->toString(nextFirstPrefix, nextPrefix);
   nextPrefix = prefix + PREFIX_END;
   ss  << this->_loopAST ->toString(nextFirstPrefix, nextPrefix);
   return ss.str();

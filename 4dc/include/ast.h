@@ -89,13 +89,15 @@ class IfAST : public StatementAST
 class forAST : public StatementAST
 {
   public:
-    forAST(StatementAST* beginAST, ExprAST* condAST, StatementAST* endAST, BlocAST* loopAST);
+    forAST(VariableAST* varialbeAST, ExprAST* beginAST, ExprAST* endAST, ExprAST* incrementAST, BlocAST* loopAST);
     virtual ~forAST();
     //virtual llvm::???* Codegen(Builder&);
   protected:
   private:
-    StatementAST *_beginAST, *_endAST;
-    ExprAST *_condAST;
+    VariableAST * _varialbeAST;
+    ExprAST *_beginAST;
+    ExprAST *_endAST;
+    ExprAST * _incrementAST
     BlocAST *_loopAST;
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
