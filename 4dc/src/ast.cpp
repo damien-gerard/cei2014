@@ -195,29 +195,29 @@ Value* IfAST::Codegen(Builder& b)
 */
 
 /**
- * forAST
+ * ForAST
  */
-forAST::forAST(VariableAST* varialbeAST, ExprAST* beginAST, ExprAST* endAST, ExprAST* incrementAST, BlocAST* loopAST)
-  : _varialbeAST(varialbeAST), _beginAST(beginAST), _endAST(endAST), _incrementAST(incrementAST), _loopAST(loopAST)
+ForAST::ForAST(VariableAST* variableAST, ExprAST* beginAST, ExprAST* endAST, ExprAST* incrementAST, BlocAST* loopAST)
+  : _variableAST(variableAST), _beginAST(beginAST), _endAST(endAST), _incrementAST(incrementAST), _loopAST(loopAST)
 {}
 
-forAST::~forAST()
+ForAST::~ForAST()
 {
-  delete this->_varialbeAST;
+  delete this->_variableAST;
   delete this->_beginAST;
   delete this->_endAST;
   delete this->_incrementAST;
   delete this->_loopAST;
 }
 
-string forAST::_toString(const string& firstPrefix, const string& prefix) const
+string ForAST::_toString(const string& firstPrefix, const string& prefix) const
 {
   string nextFirstPrefix, nextPrefix;
   nextFirstPrefix = prefix + PREFIX_BEGIN;
   nextPrefix = prefix + PREFIX_MIDDLE;
   stringstream ss;
   ss  << firstPrefix << "Statement::FOR" << endl
-      << this->_varialbeAST->toString(nextFirstPrefix, nextPrefix)
+      << this->_variableAST->toString(nextFirstPrefix, nextPrefix)
       << this->_beginAST->toString(nextFirstPrefix, nextPrefix)
       << this->_endAST ->toString(nextFirstPrefix, nextPrefix)
       << this->_incrementAST  ->toString(nextFirstPrefix, nextPrefix);

@@ -86,18 +86,19 @@ class IfAST : public StatementAST
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
-class forAST : public StatementAST
+class VariableAST;
+class ForAST : public StatementAST
 {
   public:
-    forAST(VariableAST* varialbeAST, ExprAST* beginAST, ExprAST* endAST, ExprAST* incrementAST, BlocAST* loopAST);
-    virtual ~forAST();
+    ForAST(VariableAST * variableAST, ExprAST * beginAST, ExprAST * endAST, ExprAST * incrementAST, BlocAST* loopAST);
+    virtual ~ForAST();
     //virtual llvm::???* Codegen(Builder&);
   protected:
   private:
-    VariableAST * _varialbeAST;
+    VariableAST * _variableAST;
     ExprAST *_beginAST;
     ExprAST *_endAST;
-    ExprAST * _incrementAST
+    ExprAST *_incrementAST;
     BlocAST *_loopAST;
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
@@ -151,7 +152,7 @@ class VariableAST : public ExprAST
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
 
-class LocalVariableAST : public ExprAST
+class LocalVariableAST : public VariableAST
 {
   public:
     LocalVariableAST(const std::string &);
@@ -164,7 +165,7 @@ class LocalVariableAST : public ExprAST
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
-class GlobaleVariableAST : public ExprAST
+class GlobaleVariableAST : public VariableAST
 {
   public:
     GlobaleVariableAST(const std::string &);
@@ -177,7 +178,7 @@ class GlobaleVariableAST : public ExprAST
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
-class PersistentVariableAST : public ExprAST
+class PersistentVariableAST : public VariableAST
 {
   public:
     PersistentVariableAST(const std::string &);

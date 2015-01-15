@@ -28,6 +28,7 @@ class Parser
     ExprAST* persistantVariable();
     ExprAST* localVariable();
     StatementAST* ifstatement();
+    StatementAST* forstatement();
     ExprAST* expression();
     BlocAST* bloc();
     StatementAST* statement();

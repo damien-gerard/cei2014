@@ -26,7 +26,7 @@ Token* Parser::eatToken(const TokenType& type) {
   Logger::info << "Token: " << this->_tok.type() << std::endl;
   if (this->_tok != type) {
     std::stringstream ss;
-    ss << "Unexpected token " << this->_tok << ", expected " << type;
+    ss << "Unexpected token " << this->_tok.type()<<"(\""<< this->_tok.str() << "\")"<< ", expected " << type;
     Logger::error << "Parse Error: " << ss << std::endl;
     return AST::Error<Token>(ss.str());
   }
@@ -66,7 +66,7 @@ ExprAST* Parser::persistantVariable() {
   std::string idName = this->_tok.str();
   
   // Consomme l'identifiant
-  this->eatToken();
+  this->eatToken(TokenType::ID);
   
   return new PersistentVariableAST(idName);
 }
@@ -76,13 +76,13 @@ ExprAST* Parser::localVariable() {
   this->eatToken();
   
   std::string idName = this->_tok.str();
-  
   // Consomme l'identifiant
-  if(!this->eatToken(TokenType::NUM)){
+  if(this->_tok==TokenType::NUM){
+    this->eatToken();
     Logger::error << "Parse Error: method parameter non-implemented" << std::endl;
     return new LocalVariableAST(idName);
   }
-  
+  this->eatToken(TokenType::ID);
   return new LocalVariableAST(idName);
 }
 
@@ -165,15 +165,109 @@ StatementAST* Parser::ifstatement() {
     if (!elseAST) return nullptr;
 	
 	// Consomme le token ENDIF
-    this->eatToken();
+    this->eatToken(TokenType::ENDIF);
+	if(this->_tok==TokenType::ENDL) this->eatToken();
 	
 	return new IfAST(ifAST,thenAST, elseAST);
   }
 
   // Consomme le token ENDIF
-  this->eatToken();
+  this->eatToken(TokenType::ENDIF);
+  if(this->_tok==TokenType::ENDL) this->eatToken();
     
   return new IfAST(ifAST, thenAST);
+}
+
+StatementAST* Parser::forstatement() {
+  VariableAST * variableAST;
+  ExprAST *beginAST;
+  ExprAST *endAST;
+  ExprAST *incrementAST;
+  BlocAST *bodyAST;
+  // Consomme le token For
+  this->eatToken();
+  
+  // Consomme la parenthèse ouvrante
+  if (!this->eatToken(TokenType::LEFTP)){
+    Logger::error << "Parse Error: left parenthesis '(' expected" << std::endl;
+    return nullptr;
+  }
+
+  
+  // Parse la variable index
+  std::string indexName = this->_tok.str();
+  TokenType indexType = this->_tok.type();
+  this->eatToken();
+  switch (indexType) {
+  case TokenType::DOLLAR:
+    indexName = this->_tok.str();
+    if(this->eatToken(TokenType::ID)) variableAST = new LocalVariableAST(indexName);
+	break;
+  case TokenType::DIAMOND:
+    indexName = this->_tok.str();
+    if(this->eatToken(TokenType::ID)) variableAST = new PersistentVariableAST(indexName);
+	break;
+  case TokenType::ID:
+    variableAST = new GlobaleVariableAST(indexName);
+	break;
+  default:
+    break;
+  }
+  
+  if(!variableAST){
+    Logger::error << "Parse Error: variable token expected and not : "<< indexType << std::endl;
+    variableAST =  AST::Error<GlobaleVariableAST>("variable token expected in the for arguements");
+	return nullptr;
+  }
+  
+  //Consomme le semi-colon
+  if(!this->eatToken(TokenType::SEMICOL)){
+    Logger::error << "Parse Error: semicolon expected in the for " << std::endl;
+	return nullptr;
+  }
+
+  // Parse l'expression de debut de boucle
+  beginAST = this->expression();
+  if (!beginAST) return nullptr;
+
+  //Consomme le semi-colon
+  if(!this->eatToken(TokenType::SEMICOL)){
+    Logger::error << "Parse Error: semicolon expected in the for " << std::endl;
+	return nullptr;
+  }
+
+  // Parse l'expression de fin de boucle
+  endAST = this->expression();
+  if (!beginAST) return nullptr;
+
+  if(this->_tok==TokenType::SEMICOL){  // y a t'il une expression pour l'incrementation ?
+    //Consomme le semi-colon
+	this->eatToken();
+	  
+    // Parse l'expression de debut de boucle
+    incrementAST = this->expression();
+    if (!incrementAST) return nullptr;
+  }else{
+    incrementAST= new LiteralAST("1");
+  }
+  
+  // Consomme la parenthèse fermante
+  if (!this->eatToken(TokenType::RIGHTP)){
+    Logger::error << "Parse Error: right parenthesis ')' expected" << std::endl;
+    return nullptr;
+  }
+  
+  if(this->_tok==TokenType::ENDL) this->eatToken();
+
+  // Parse le bloc THEN
+  bodyAST = this->bloc();
+  if (!bodyAST) return nullptr;
+
+  // Consomme le token ENDFOR
+  this->eatToken(TokenType::ENDFOR);
+  if(this->_tok==TokenType::ENDL) this->eatToken();
+    
+  return new ForAST(variableAST, beginAST, endAST, incrementAST, bodyAST);
 }
 
 
@@ -271,7 +365,7 @@ PrototypeAST* Parser::prototype() {
 // }
 
 BlocAST* Parser::bloc() {
-  Logger::info << "test:bloc"<<std::endl;
+
   std::vector<StatementAST*> statements;
   
   while(true){
@@ -296,10 +390,11 @@ BlocAST* Parser::bloc() {
 }
 
 StatementAST* Parser::statement() {
-  Logger::info << "test:statement"<<std::endl;
   switch(this->_tok.type()){
   case TokenType::IF:
     return this->ifstatement();
+  case TokenType::FOR:
+    return this->forstatement();
   default:
     ExprAST* expr = this->expression();
 	if(!expr) return nullptr;
@@ -316,6 +411,7 @@ StatementAST* Parser::statement() {
 void Parser::parse() {
   if(this->_tok != TokenType::ENDF) {
     this->_ast = this->bloc();
+    Logger::info << "End Bloc " <<this->_tok.type()<< std::endl;
   }
 }
 
