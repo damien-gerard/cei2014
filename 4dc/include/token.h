@@ -24,6 +24,7 @@ enum class TokenType
   RIGHTB,   // }
   SEMICOL,  // ;
   COLON,    // :
+  COMMA,	// ,
 
   IF,       // If
   ELSE,     // Else
@@ -48,6 +49,8 @@ std::ostream& operator<<(std::ostream& out, TokenType);
 class Token
 {
   public:
+    TokenType type() {return this->_type;};
+	
     Token();
     Token(TokenType);
     Token(TokenType, const std::string&);

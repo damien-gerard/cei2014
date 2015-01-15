@@ -139,6 +139,10 @@ Token Lexer::eatSymbolToken()
   case ';':
     return TokenType::SEMICOL;
   case ':':
+    if(chr1=='='){  // opérateur :=
+	  this->eatChr();
+      return this->eatOpToken();
+	}
     return TokenType::COLON;
   case '$':
     return TokenType::DOLLAR;
