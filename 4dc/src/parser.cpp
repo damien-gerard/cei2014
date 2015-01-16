@@ -164,6 +164,8 @@ StatementAST* Parser::statement() {
     return this->forstatement();
   case TokenType::WHILE:
     return this->whilestatement();
+  case TokenType::REPEAT:
+    return this->repeatstatement();
   default:
     ExprAST* expr = this->expression();
 	if(!expr) return nullptr;
@@ -361,6 +363,45 @@ StatementAST* Parser::whilestatement() {
   if(this->_tok==TokenType::ENDL) this->eatToken();
     
   return new WhileAST(whileAST, loopAST);
+}
+
+////// REPEAT ///////
+
+StatementAST* Parser::repeatstatement() {
+  ExprAST *untilAST;
+  BlocAST *loopAST;
+  
+  // Consomme le token REPEAT
+  this->eatToken();
+  
+  if(this->_tok==TokenType::ENDL) this->eatToken();
+
+  // Parse le bloc de la boucle
+  loopAST = this->bloc();
+  if (!loopAST) return nullptr;
+
+  // Consomme le token UNTIL
+  this->eatToken(TokenType::UNTIL);
+  
+  // Consomme la parenthèse ouvrante
+  if (!this->eatToken(TokenType::LEFTP)){
+    Logger::error << "Parse Error: left parenthesis '(' expected" << std::endl;
+    return nullptr;
+  }
+	
+  // Parse la condition
+  untilAST = this->expression();
+  if (!untilAST) return nullptr;
+	
+  // Consomme la parenthèse fermante
+  if (!this->eatToken(TokenType::RIGHTP)){
+    Logger::error << "Parse Error: right parenthesis ')' expected" << std::endl;
+    return nullptr;
+  }
+  
+  if(this->_tok==TokenType::ENDL) this->eatToken();
+    
+  return new RepeatAST(untilAST, loopAST);
 }
 
 

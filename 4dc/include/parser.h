@@ -37,6 +37,7 @@ class Parser
     StatementAST* ifstatement();
     StatementAST* forstatement();
     StatementAST* whilestatement();
+    StatementAST* repeatstatement();
 	
     PrototypeAST* prototype();
     // FunctionAST* functionDef();

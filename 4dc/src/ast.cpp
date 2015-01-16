@@ -250,6 +250,29 @@ string WhileAST::_toString(const string& firstPrefix, const string& prefix) cons
   return ss.str();
 }
 
+/**
+ * RepeatAST
+ */
+RepeatAST::RepeatAST(ExprAST* condAST, BlocAST* loopAST)
+  : _condAST(condAST), _loopAST(loopAST)
+{}
+
+RepeatAST::~RepeatAST()
+{
+  delete this->_condAST;
+  delete this->_loopAST;
+}
+
+string RepeatAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  string nextPrefix = prefix + PREFIX_MIDDLE;
+  stringstream ss;
+  ss  << firstPrefix << "Statement::RepeatAST" << endl
+      << this->_loopAST ->toString(prefix + "+[REPEAT]" + NAMED_PREFIX_BEGIN, nextPrefix + "     ");
+  nextPrefix = prefix + PREFIX_END;
+  ss  << this->_condAST ->toString(prefix + "+[UNTIL]" + NAMED_PREFIX_BEGIN, nextPrefix + "        ");
+  return ss.str();
+}
 
 /**
  * ExprAST

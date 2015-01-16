@@ -118,6 +118,20 @@ class WhileAST : public StatementAST
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
+class RepeatAST : public StatementAST
+{
+  public:
+    RepeatAST(ExprAST* condAST, BlocAST* loopAST);
+    virtual ~RepeatAST();
+    //virtual llvm::???* Codegen(Builder&);
+  protected:
+  private:
+    ExprAST *_condAST;
+    BlocAST *_loopAST;
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
+};
+
 class ExprAST : public AST
 {
   public:
