@@ -1,0 +1,7 @@
+if(1<2)
+	blu := 4
+	//trololo
+Else
+    blu := 2
+	t t := 1*3+2
+end if

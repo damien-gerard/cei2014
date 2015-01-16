@@ -78,8 +78,9 @@ ExprAST* Parser::localVariable() {
   std::string idName = this->_tok.str();
   // Consomme l'identifiant
   if(this->_tok==TokenType::NUM){
+    std::string number = this->_tok.str();
     this->eatToken();
-    Logger::error << "Parse Error: method parameter non-implemented" << std::endl;
+    Logger::warning << "Parse Warning: method parameter $"<<number<<" non-implemented" << std::endl;
     return new LocalVariableAST(idName);
   }
   this->eatToken(TokenType::ID);
@@ -371,6 +372,7 @@ BlocAST* Parser::bloc() {
   while(true){
     switch(this->_tok.type()){
 	case TokenType::ENDF:
+	case TokenType::ELSE:
 	case TokenType::ENDIF:
 	case TokenType::ENDFOR:
 	case TokenType::ENDWHILE:
@@ -411,7 +413,6 @@ StatementAST* Parser::statement() {
 void Parser::parse() {
   if(this->_tok != TokenType::ENDF) {
     this->_ast = this->bloc();
-    Logger::info << "End Bloc " <<this->_tok.type()<< std::endl;
   }
 }
 

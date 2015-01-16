@@ -1,10 +1,13 @@
-+ lexerTests/test1.4d
-+ lexerTests/test2.4d
-+ lexerTests/test3.4d
-+ lexerTests/test4.4d
-- lexerTests/stringError.4d
+#Tests valides
++ lexerTests/testVariableAEspace.4d
++ lexerTests/testAffectationEtSomme.4d
++ lexerTests/testIf.4d
++ lexerTests/testIfElse.4d
++ lexerTests/testAffectation.4d
 + lexerTests/testFor.4d
-+ lexerTests/testFor2.4d
++ lexerTests/testForCustomIncrement.4d
 + lexerTests/testRepeat.4d
 + lexerTests/testWhile.4d
+#Tests d'erreur
+- lexerTests/errorString.4d
 #
