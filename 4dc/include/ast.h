@@ -104,11 +104,11 @@ class ForAST : public StatementAST
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
-class whileAST : public StatementAST
+class WhileAST : public StatementAST
 {
   public:
-    whileAST(ExprAST* condAST, BlocAST* loopAST);
-    virtual ~whileAST();
+    WhileAST(ExprAST* condAST, BlocAST* loopAST);
+    virtual ~WhileAST();
     //virtual llvm::???* Codegen(Builder&);
   protected:
   private:

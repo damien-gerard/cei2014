@@ -126,6 +126,58 @@ ExprAST* Parser::identifier() {
   return new CallAST(idName, args);
 }
 
+///////////////////
+/// Statements ////
+///////////////////
+
+BlocAST* Parser::bloc() {
+
+  std::vector<StatementAST*> statements;
+  
+  while(true){
+    switch(this->_tok.type()){
+	case TokenType::ENDF:
+	case TokenType::ELSE:
+	case TokenType::ENDIF:
+	case TokenType::ENDFOR:
+	case TokenType::ENDWHILE:
+	case TokenType::UNTIL:
+	  return new BlocAST(statements); // sort du block
+	case TokenType::ENDL: // ne lit pas les lignes vides
+	  this->eatToken();
+	  break;
+	default:
+	  StatementAST* statement = this->statement();
+	  if(!statement) return nullptr;
+	  
+	  statements.push_back(statement);
+	}
+  }
+  return nullptr;
+}
+
+StatementAST* Parser::statement() {
+  switch(this->_tok.type()){
+  case TokenType::IF:
+    return this->ifstatement();
+  case TokenType::FOR:
+    return this->forstatement();
+  case TokenType::WHILE:
+    return this->whilestatement();
+  default:
+    ExprAST* expr = this->expression();
+	if(!expr) return nullptr;
+	
+	if(this->_tok!=TokenType::ENDF&&!this->eatToken(TokenType::ENDL)){
+	  Logger::error << "Parse Error: ENDL expected after the expression"<< std::endl;
+	  return nullptr;
+	}
+    return new StatementExprAST(expr);
+  }
+}
+
+/////// IF ////////
+
 StatementAST* Parser::ifstatement() {
   ExprAST *ifAST;
   BlocAST *thenAST;
@@ -178,6 +230,8 @@ StatementAST* Parser::ifstatement() {
     
   return new IfAST(ifAST, thenAST);
 }
+
+///// FOR /////
 
 StatementAST* Parser::forstatement() {
   VariableAST * variableAST;
@@ -269,6 +323,44 @@ StatementAST* Parser::forstatement() {
   if(this->_tok==TokenType::ENDL) this->eatToken();
     
   return new ForAST(variableAST, beginAST, endAST, incrementAST, bodyAST);
+}
+
+////// WHILE ///////
+
+StatementAST* Parser::whilestatement() {
+  ExprAST *whileAST;
+  BlocAST *loopAST;
+  
+  // Consomme le token WHILE
+  this->eatToken();
+  
+  // Consomme la parenthèse ouvrante
+  if (!this->eatToken(TokenType::LEFTP)){
+    Logger::error << "Parse Error: left parenthesis '(' expected" << std::endl;
+    return nullptr;
+  }
+	
+  // Parse la condition
+  whileAST = this->expression();
+  if (!whileAST) return nullptr;
+	
+  // Consomme la parenthèse fermante
+  if (!this->eatToken(TokenType::RIGHTP)){
+    Logger::error << "Parse Error: right parenthesis ')' expected" << std::endl;
+    return nullptr;
+  }
+  
+  if(this->_tok==TokenType::ENDL) this->eatToken();
+
+  // Parse le bloc de la boucle
+  loopAST = this->bloc();
+  if (!loopAST) return nullptr;
+
+  // Consomme le token ENDWHILE
+  this->eatToken(TokenType::ENDWHILE);
+  if(this->_tok==TokenType::ENDL) this->eatToken();
+    
+  return new WhileAST(whileAST, loopAST);
 }
 
 
@@ -365,49 +457,7 @@ PrototypeAST* Parser::prototype() {
   // return nullptr;
 // }
 
-BlocAST* Parser::bloc() {
 
-  std::vector<StatementAST*> statements;
-  
-  while(true){
-    switch(this->_tok.type()){
-	case TokenType::ENDF:
-	case TokenType::ELSE:
-	case TokenType::ENDIF:
-	case TokenType::ENDFOR:
-	case TokenType::ENDWHILE:
-	case TokenType::UNTIL:
-	  return new BlocAST(statements); // sort du block
-	case TokenType::ENDL: // ne lit pas les lignes vides
-	  this->eatToken();
-	  break;
-	default:
-	  StatementAST* statement = this->statement();
-	  if(!statement) return nullptr;
-	  
-	  statements.push_back(statement);
-	}
-  }
-  return nullptr;
-}
-
-StatementAST* Parser::statement() {
-  switch(this->_tok.type()){
-  case TokenType::IF:
-    return this->ifstatement();
-  case TokenType::FOR:
-    return this->forstatement();
-  default:
-    ExprAST* expr = this->expression();
-	if(!expr) return nullptr;
-	
-	if(this->_tok!=TokenType::ENDF&&!this->eatToken(TokenType::ENDL)){
-	  Logger::error << "Parse Error: ENDL expected after the expression"<< std::endl;
-	  return nullptr;
-	}
-    return new StatementExprAST(expr);
-  }
-}
 
 
 void Parser::parse() {

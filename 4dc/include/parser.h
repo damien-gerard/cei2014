@@ -21,19 +21,23 @@ class Parser
 
     Token* eatToken();
     Token* eatToken(const TokenType&);
-
+	
+    ExprAST* expression();
+    ExprAST* binOpRHS(ExprAST* LHS);
+    ExprAST* primary();
     ExprAST* number();
     ExprAST* parenthesis();
     ExprAST* identifier();
     ExprAST* persistantVariable();
     ExprAST* localVariable();
+
+
+    BlocAST* bloc();
+    StatementAST* statement();	
     StatementAST* ifstatement();
     StatementAST* forstatement();
-    ExprAST* expression();
-    BlocAST* bloc();
-    StatementAST* statement();
-    ExprAST* binOpRHS(ExprAST* LHS);
-    ExprAST* primary();
+    StatementAST* whilestatement();
+	
     PrototypeAST* prototype();
     // FunctionAST* functionDef();
     // PrototypeAST* externDef();

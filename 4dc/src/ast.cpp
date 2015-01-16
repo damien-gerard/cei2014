@@ -227,19 +227,19 @@ string ForAST::_toString(const string& firstPrefix, const string& prefix) const
 }
 
 /**
- * whileAST
+ * WhileAST
  */
-whileAST::whileAST(ExprAST* condAST, BlocAST* loopAST)
+WhileAST::WhileAST(ExprAST* condAST, BlocAST* loopAST)
   : _condAST(condAST), _loopAST(loopAST)
 {}
 
-whileAST::~whileAST()
+WhileAST::~WhileAST()
 {
   delete this->_condAST;
   delete this->_loopAST;
 }
 
-string whileAST::_toString(const string& firstPrefix, const string& prefix) const
+string WhileAST::_toString(const string& firstPrefix, const string& prefix) const
 {
   string nextPrefix = prefix + PREFIX_MIDDLE;
   stringstream ss;
