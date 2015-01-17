@@ -1,0 +1,8 @@
+#Tests valides
++ parserTests/testIfNoBody.4d
+#Tests d'erreur
+- parserTests/errorIfNoLParenthesis.4d
+- parserTests/errorIfNoRParenthesis.4d
+- parserTests/errorIfNoCondition.4d
+- parserTests/errorIfNoEndIf.4d
+#
