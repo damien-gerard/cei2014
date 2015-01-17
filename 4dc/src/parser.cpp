@@ -109,7 +109,7 @@ ExprAST* Parser::identifier() {
         break;
       }
 
-      if (!this->eatToken(TokenType::COMMA)){
+      if (!this->eatToken(TokenType::SEMICOL)){
         Logger::error << "Parse Error: right parenthesis ')' expected" << std::endl;
         return nullptr;
       }

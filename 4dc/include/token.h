@@ -24,7 +24,6 @@ enum class TokenType
   RIGHTB,   // }
   SEMICOL,  // ;
   COLON,    // :
-  COMMA,	// ,
 
   IF,       // If
   ELSE,     // Else
