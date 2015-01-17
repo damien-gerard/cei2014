@@ -32,6 +32,9 @@ int main(int argc, char *argv[])
       // }
 	  Parser parser(lex);
 	  parser.parse();
+      if(!parser.ast()){
+        exit(EXIT_FAILURE);
+      }
 	  Logger::info << *parser.ast() <<std::endl<<std::endl;
 	  
     }else{
@@ -48,6 +51,9 @@ int main(int argc, char *argv[])
     // }
     Parser parser(lex);
 	parser.parse();
+    if(!parser.ast()){
+      exit(EXIT_FAILURE);
+    }
 	Logger::info << *parser.ast() <<std::endl<<std::endl;
   }
 

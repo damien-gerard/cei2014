@@ -27,7 +27,7 @@ Token* Parser::eatToken(const TokenType& type) {
   if (this->_tok != type) {
     std::stringstream ss;
     ss << "Unexpected token " << this->_tok.type()<<"(\""<< this->_tok.str() << "\")"<< ", expected " << type;
-    Logger::error << "Parse Error: " << ss << std::endl;
+    Logger::error << "Parse Error: " << ss.str() << std::endl;
     return AST::Error<Token>(ss.str());
   }
   this->_tok = this->_lexer.nextToken();
@@ -52,10 +52,7 @@ ExprAST* Parser::parenthesis() {
 
   if (!V) return nullptr; // Propage l'erreur
 
-  if (!this->eatToken(TokenType::RIGHTP)){
-    Logger::error << "Parse Error: right parenthesis ')' expected" << std::endl;
-  return nullptr;
-  }
+  if (!this->eatToken(TokenType::RIGHTP)) return nullptr;
 
   return V;
 }
@@ -170,10 +167,7 @@ StatementAST* Parser::statement() {
     ExprAST* expr = this->expression();
 	if(!expr) return nullptr;
 	
-	if(this->_tok!=TokenType::ENDF&&!this->eatToken(TokenType::ENDL)){
-	  Logger::error << "Parse Error: ENDL expected after the expression"<< std::endl;
-	  return nullptr;
-	}
+	if(this->_tok!=TokenType::ENDF&&!this->eatToken(TokenType::ENDL)) return nullptr;
     return new StatementExprAST(expr);
   }
 }
@@ -188,20 +182,14 @@ StatementAST* Parser::ifstatement() {
   this->eatToken();
   
   // Consomme la parenthèse ouvrante
-  if (!this->eatToken(TokenType::LEFTP)){
-    Logger::error << "Parse Error: left parenthesis '(' expected" << std::endl;
-    return nullptr;
-  }
+  if (!this->eatToken(TokenType::LEFTP)) return nullptr;
 	
   // Parse la condition
   ifAST = this->expression();
   if (!ifAST) return nullptr;
 	
   // Consomme la parenthèse fermante
-  if (!this->eatToken(TokenType::RIGHTP)){
-    Logger::error << "Parse Error: right parenthesis ')' expected" << std::endl;
-    return nullptr;
-  }
+  if (!this->eatToken(TokenType::RIGHTP)) return nullptr;
   
   if(this->_tok==TokenType::ENDL) this->eatToken();
 
@@ -245,10 +233,7 @@ StatementAST* Parser::forstatement() {
   this->eatToken();
   
   // Consomme la parenthèse ouvrante
-  if (!this->eatToken(TokenType::LEFTP)){
-    Logger::error << "Parse Error: left parenthesis '(' expected" << std::endl;
-    return nullptr;
-  }
+  if (!this->eatToken(TokenType::LEFTP)) return nullptr;
 
   
   // Parse la variable index
@@ -278,20 +263,14 @@ StatementAST* Parser::forstatement() {
   }
   
   //Consomme le semi-colon
-  if(!this->eatToken(TokenType::SEMICOL)){
-    Logger::error << "Parse Error: semicolon expected in the for " << std::endl;
-	return nullptr;
-  }
+  if(!this->eatToken(TokenType::SEMICOL)) return nullptr;
 
   // Parse l'expression de debut de boucle
   beginAST = this->expression();
   if (!beginAST) return nullptr;
 
   //Consomme le semi-colon
-  if(!this->eatToken(TokenType::SEMICOL)){
-    Logger::error << "Parse Error: semicolon expected in the for " << std::endl;
-	return nullptr;
-  }
+  if(!this->eatToken(TokenType::SEMICOL)) return nullptr;
 
   // Parse l'expression de fin de boucle
   endAST = this->expression();
@@ -309,10 +288,7 @@ StatementAST* Parser::forstatement() {
   }
   
   // Consomme la parenthèse fermante
-  if (!this->eatToken(TokenType::RIGHTP)){
-    Logger::error << "Parse Error: right parenthesis ')' expected" << std::endl;
-    return nullptr;
-  }
+  if (!this->eatToken(TokenType::RIGHTP)) return nullptr;
   
   if(this->_tok==TokenType::ENDL) this->eatToken();
 
@@ -337,20 +313,14 @@ StatementAST* Parser::whilestatement() {
   this->eatToken();
   
   // Consomme la parenthèse ouvrante
-  if (!this->eatToken(TokenType::LEFTP)){
-    Logger::error << "Parse Error: left parenthesis '(' expected" << std::endl;
-    return nullptr;
-  }
+  if (!this->eatToken(TokenType::LEFTP)) return nullptr;
 	
   // Parse la condition
   whileAST = this->expression();
   if (!whileAST) return nullptr;
 	
   // Consomme la parenthèse fermante
-  if (!this->eatToken(TokenType::RIGHTP)){
-    Logger::error << "Parse Error: right parenthesis ')' expected" << std::endl;
-    return nullptr;
-  }
+  if (!this->eatToken(TokenType::RIGHTP)) return nullptr;
   
   if(this->_tok==TokenType::ENDL) this->eatToken();
 
@@ -384,26 +354,23 @@ StatementAST* Parser::repeatstatement() {
   this->eatToken(TokenType::UNTIL);
   
   // Consomme la parenthèse ouvrante
-  if (!this->eatToken(TokenType::LEFTP)){
-    Logger::error << "Parse Error: left parenthesis '(' expected" << std::endl;
-    return nullptr;
-  }
+  if (!this->eatToken(TokenType::LEFTP)) return nullptr;
 	
   // Parse la condition
   untilAST = this->expression();
   if (!untilAST) return nullptr;
 	
   // Consomme la parenthèse fermante
-  if (!this->eatToken(TokenType::RIGHTP)){
-    Logger::error << "Parse Error: right parenthesis ')' expected" << std::endl;
-    return nullptr;
-  }
+  if (!this->eatToken(TokenType::RIGHTP)) return nullptr;
   
   if(this->_tok==TokenType::ENDL) this->eatToken();
     
   return new RepeatAST(untilAST, loopAST);
 }
 
+//////////////////
+/// Expression ///
+//////////////////
 
 ExprAST* Parser::expression() {
   ExprAST *LHS = this->primary();
