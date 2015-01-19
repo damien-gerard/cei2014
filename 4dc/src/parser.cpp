@@ -38,7 +38,7 @@ Token* Parser::eatToken(const TokenType& type) {
 /***
  * Parser Methods
  */
-ExprAST* Parser::number() {
+ExprAST* Parser::literal() {
   ExprAST* result = new LiteralAST(this->_tok.str());
   this->eatToken();
   return result;
@@ -411,7 +411,8 @@ ExprAST* Parser::primary() {
   case TokenType::ID:
     return this->identifier();
   case TokenType::NUM:
-    return this->number();
+  case TokenType::STRING:
+    return this->literal();
   case TokenType::LEFTP:
     return this->parenthesis();
   default:
