@@ -377,7 +377,12 @@ ExprAST* Parser::expression() {
   if (!LHS) return nullptr;
   
   if(this->_tok == TokenType::OP){
-    return this->binOpRHS(LHS);
+    
+    ExprAST *leftAccumulatorExpr = this->binOpRHS(LHS);
+	while(this->_tok == TokenType::OP){
+	   leftAccumulatorExpr = this->binOpRHS(leftAccumulatorExpr);
+	}
+	return leftAccumulatorExpr;
   }else{
     return LHS;
   }
@@ -392,7 +397,7 @@ ExprAST* Parser::binOpRHS(ExprAST *LHS) {
   // On consomme l'opérateur	
   this->eatToken();
 
-  ExprAST *RHS = this->expression();	//On récupére l'AST de la partie droite de l'opération
+  ExprAST *RHS = this->primary();	//On récupére l'AST de la partie droite de l'opération
   if (!RHS){
     Logger::error << "Parse Error: 2nd operand expected after operator '" << binOP <<"'"<< std::endl;
     return nullptr;
