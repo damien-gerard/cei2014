@@ -205,12 +205,25 @@ class PersistentVariableAST : public VariableAST
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
-
-class OpAST : public ExprAST
+class UniOpAST : public ExprAST
 {
   public:
-    OpAST(const std::string& op, ExprAST* lhs, ExprAST* rhs);
-    virtual ~OpAST();
+    UniOpAST(const std::string& op, ExprAST* expr);
+    virtual ~UniOpAST();
+    //virtual llvm::Value* Codegen(Builder&);
+  protected:
+  private:
+    std::string _str;
+    ExprAST *_expr; // delete at destruction
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
+};
+
+class BinOpAST : public ExprAST
+{
+  public:
+    BinOpAST(const std::string& op, ExprAST* lhs, ExprAST* rhs);
+    virtual ~BinOpAST();
     //virtual llvm::Value* Codegen(Builder&);
   protected:
   private:

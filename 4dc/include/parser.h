@@ -25,6 +25,7 @@ class Parser
     ExprAST* expression();
     ExprAST* binOpRHS(ExprAST* LHS);
     ExprAST* primary();
+    ExprAST* uniOpExpr();
     ExprAST* literal();
     ExprAST* parenthesis();
     ExprAST* identifier();

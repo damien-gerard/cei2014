@@ -373,7 +373,7 @@ StatementAST* Parser::repeatstatement() {
 //////////////////
 
 ExprAST* Parser::expression() {
-  ExprAST *LHS = this->primary();
+  ExprAST *LHS = this->uniOpExpr();
   if (!LHS) return nullptr;
   
   if(this->_tok == TokenType::OP){
@@ -388,7 +388,21 @@ ExprAST* Parser::expression() {
   }
 }
 
-
+ExprAST* Parser::uniOpExpr(){
+  if(this->_tok == TokenType::OP){
+    std::string uniOP = this->_tok.str();
+	
+	// On consomme l'opérateur	
+    this->eatToken();
+	ExprAST *expr = this->primary();	//On récupére l'AST de la partie droite de l'opération
+    if (!expr){
+      Logger::error << "Parse Error: primary expression expected after operator '" << uniOP <<"'"<< std::endl;
+      return nullptr;
+    }
+	return new UniOpAST(uniOP,expr);
+  }
+  return this->primary();
+}
 
 ExprAST* Parser::binOpRHS(ExprAST *LHS) {
   
@@ -403,7 +417,7 @@ ExprAST* Parser::binOpRHS(ExprAST *LHS) {
     return nullptr;
   }
 
-  return new OpAST(binOP, LHS, RHS);
+  return new BinOpAST(binOP, LHS, RHS);
 }
 
 

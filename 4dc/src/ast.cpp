@@ -361,31 +361,54 @@ string PersistentVariableAST::_toString(const string& firstPrefix, const string&
 
 
 /**
- * OpAST
+ * UniOpAST
  */
-OpAST::OpAST(const std::string& op, ExprAST* lhs, ExprAST* rhs)
-  : _str(op), _lhs(lhs), _rhs(rhs)
+UniOpAST::UniOpAST(const std::string& op, ExprAST* expr)
+  : _str(op), _expr(expr)
 {}
-OpAST::~OpAST()
+UniOpAST::~UniOpAST()
 {
-  delete this->_lhs;
-  delete this->_rhs;
+  delete this->_expr;
 }
 
-string OpAST::_toString(const string& firstPrefix, const string& prefix) const
+string UniOpAST::_toString(const string& firstPrefix, const string& prefix) const
 {
   string nextFirstPrefix, nextPrefix;
   nextFirstPrefix = prefix + PREFIX_BEGIN;
   nextPrefix = prefix + PREFIX_MIDDLE;
   stringstream ss;
-  ss  << firstPrefix << "Expression::OP " << this->_str << endl
+  ss  << firstPrefix << "Expression::UniOP " << this->_str << endl;
+  nextPrefix = prefix + PREFIX_END;
+  ss  << this->_expr->toString(nextFirstPrefix, nextPrefix);
+  return ss.str();
+}
+
+/**
+ * BinOpAST
+ */
+BinOpAST::BinOpAST(const std::string& op, ExprAST* lhs, ExprAST* rhs)
+  : _str(op), _lhs(lhs), _rhs(rhs)
+{}
+BinOpAST::~BinOpAST()
+{
+  delete this->_lhs;
+  delete this->_rhs;
+}
+
+string BinOpAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  string nextFirstPrefix, nextPrefix;
+  nextFirstPrefix = prefix + PREFIX_BEGIN;
+  nextPrefix = prefix + PREFIX_MIDDLE;
+  stringstream ss;
+  ss  << firstPrefix << "Expression::BinOP " << this->_str << endl
       << this->_lhs->toString(nextFirstPrefix, nextPrefix);
   nextPrefix = prefix + PREFIX_END;
   ss  << this->_rhs->toString(nextFirstPrefix, nextPrefix);
   return ss.str();
 }
 /*
-Value* OpAST::Codegen(Builder& b)
+Value* BinOpAST::Codegen(Builder& b)
 {
 
   Value *L = this->_lhs->Codegen(b);
