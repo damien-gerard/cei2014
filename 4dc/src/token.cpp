@@ -109,6 +109,9 @@ std::ostream& operator<<(std::ostream& out, TokenType tokType)
   case TokenType::UNTIL:
     out << "UNTIL";
     break;
+  case TokenType::AFFECT:
+    out << "AFFECT";
+    break;
   case TokenType::OP:
     out << "OP";
     break;
@@ -165,6 +168,8 @@ std::string tokenTypeToString(TokenType tokType) {
     return "Repeat";
   case TokenType::UNTIL:
     return "Until";
+  case TokenType::AFFECT:
+    return ":=";
   case TokenType::OP:
     return "OP";
   case TokenType::NIL:

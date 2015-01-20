@@ -22,15 +22,17 @@ class Parser
     Token* eatToken();
     Token* eatToken(const TokenType&);
 	
-    ExprAST* expression();
+    ExprAST* expression(ExprAST *defineLHS);
     ExprAST* binOpRHS(ExprAST* LHS);
     ExprAST* primary();
     ExprAST* uniOpExpr();
     ExprAST* literal();
     ExprAST* parenthesis();
     ExprAST* identifier();
-    ExprAST* persistantVariable();
-    ExprAST* localVariable();
+	ExprAST* callFunction(std::string functionName);
+
+    VariableAST* persistantVariable();
+    VariableAST* localVariable();
 
 
     BlocAST* bloc();
@@ -39,6 +41,7 @@ class Parser
     StatementAST* forstatement();
     StatementAST* whilestatement();
     StatementAST* repeatstatement();
+	StatementAST* affectstatement(VariableAST* variableAST);
 	
     PrototypeAST* prototype();
     // FunctionAST* functionDef();

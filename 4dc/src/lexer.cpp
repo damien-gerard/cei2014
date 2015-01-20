@@ -141,7 +141,7 @@ Token Lexer::eatSymbolToken()
   case ':':
     if(chr1=='='){  // opérateur :=
 	  this->eatChr();
-      return this->eatOpToken();
+      return TokenType::AFFECT;
 	}
     return TokenType::COLON;
   case '$':

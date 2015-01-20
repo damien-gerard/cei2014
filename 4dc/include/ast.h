@@ -70,6 +70,20 @@ class StatementExprAST : public StatementAST
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
+class VariableAST;
+class AffectationAST : public StatementAST
+{
+  public:
+    AffectationAST(VariableAST * variableAST, ExprAST* expr);
+    virtual ~AffectationAST();
+    //virtual llvm::???* Codegen(Builder&);
+  protected:
+  private:
+    VariableAST * _variableAST;
+    ExprAST* _expr; // delete at destruction
+
+    virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
+};
 
 class IfAST : public StatementAST
 {
@@ -86,7 +100,7 @@ class IfAST : public StatementAST
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
-class VariableAST;
+
 class ForAST : public StatementAST
 {
   public:

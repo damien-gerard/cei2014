@@ -38,6 +38,8 @@ enum class TokenType
   REPEAT,   // Repeat
   UNTIL,    // Until
   
+  AFFECT,   // :=
+  
   OP,       // operators
 
   NIL       // undefined token

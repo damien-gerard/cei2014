@@ -95,6 +95,32 @@ string StatementExprAST::_toString(const string& firstPrefix, const string& pref
 }
 
 /**
+ * AffectationAST
+ */
+AffectationAST::AffectationAST(VariableAST* variableAST, ExprAST* expr)
+  : _variableAST(variableAST), _expr(expr)
+{}
+
+AffectationAST::~AffectationAST()
+{
+  delete this->_variableAST;
+  delete this->_expr;
+}
+
+string AffectationAST::_toString(const string& firstPrefix, const string& prefix) const
+{
+  string nextPrefix = prefix + NAMED_PREFIX_MIDDLE;
+  stringstream ss;
+  ss  << firstPrefix << "Statement::Affectation" << endl
+      << this->_variableAST->toString(prefix + "+[Variable]" + NAMED_PREFIX_BEGIN, nextPrefix + "     ");
+
+  nextPrefix = prefix + NAMED_PREFIX_END;
+  ss  << this->_expr->toString(prefix + "+[EXPR]" + NAMED_PREFIX_BEGIN, nextPrefix + "       ");
+  
+  return ss.str();
+}
+
+/**
  * IfAST
  */
 IfAST::IfAST(ExprAST* condAST, BlocAST* thenAST)
