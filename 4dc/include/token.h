@@ -51,7 +51,7 @@ class Token
 {
   public:
     TokenType type() {return this->_type;};
-	
+  
     Token();
     Token(TokenType);
     Token(TokenType, const std::string&);

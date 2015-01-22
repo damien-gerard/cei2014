@@ -13,7 +13,7 @@ const string NAMED_PREFIX_END     = "  ";
 const string PREFIX_BEGIN         = "+> ";
 const string PREFIX_MIDDLE        = "|  ";
 const string PREFIX_END           = "   ";
-
+ 
 /**
  * AST
  */
@@ -251,6 +251,7 @@ string ForAST::_toString(const string& firstPrefix, const string& prefix) const
   ss  << this->_loopAST ->toString(nextFirstPrefix, nextPrefix);
   return ss.str();
 }
+
 
 /**
  * WhileAST

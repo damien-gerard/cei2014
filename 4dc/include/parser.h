@@ -10,18 +10,18 @@ class Parser
 {
   public:
     Parser(Lexer&);
-	~Parser();
+  ~Parser();
     void parse();
-	AST* ast();
+  AST* ast();
   protected:
   private:
     Lexer& _lexer;
     Token _tok;
-	AST* _ast;
+  AST* _ast;
 
     Token* eatToken();
     Token* eatToken(const TokenType&);
-	
+  
     ExprAST* expression(ExprAST *defineLHS);
     ExprAST* binOpRHS(ExprAST* LHS);
     ExprAST* primary();
@@ -29,20 +29,20 @@ class Parser
     ExprAST* literal();
     ExprAST* parenthesis();
     ExprAST* identifier();
-	ExprAST* callFunction(std::string functionName);
+  ExprAST* callFunction(std::string functionName);
 
     VariableAST* persistantVariable();
     VariableAST* localVariable();
 
 
     BlocAST* bloc();
-    StatementAST* statement();	
+    StatementAST* statement();  
     StatementAST* ifstatement();
     StatementAST* forstatement();
     StatementAST* whilestatement();
     StatementAST* repeatstatement();
-	StatementAST* affectstatement(VariableAST* variableAST);
-	
+  StatementAST* affectstatement(VariableAST* variableAST);
+  
     PrototypeAST* prototype();
     // FunctionAST* functionDef();
     // PrototypeAST* externDef();

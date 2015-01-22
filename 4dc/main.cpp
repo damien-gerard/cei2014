@@ -30,13 +30,13 @@ int main(int argc, char *argv[])
       // while ((t = lex.nextToken()) != TokenType::ENDF) {
         // Logger::info << "->" << t << endl;
       // }
-	  Parser parser(lex);
-	  parser.parse();
+    Parser parser(lex);
+    parser.parse();
       if(!parser.ast()){
         exit(EXIT_FAILURE);
       }
-	  Logger::info << *parser.ast() <<std::endl<<std::endl;
-	  
+    Logger::info << *parser.ast() <<std::endl<<std::endl;
+    
     }else{
       Logger::error << "Error: cannot find \"" << current_exec_name << "\"" << endl;
       exit(EXIT_FAILURE);
@@ -50,11 +50,11 @@ int main(int argc, char *argv[])
       // Logger::info << "->" << t << endl;
     // }
     Parser parser(lex);
-	parser.parse();
+  parser.parse();
     if(!parser.ast()){
       exit(EXIT_FAILURE);
     }
-	Logger::info << *parser.ast() <<std::endl<<std::endl;
+  Logger::info << *parser.ast() <<std::endl<<std::endl;
   }
 
   // AST* ast =  new BlocAST({
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
                   // )
                 // )}
               // );
-			  
+        
   // Logger::info << *ast;
   // delete ast;
   return 0;

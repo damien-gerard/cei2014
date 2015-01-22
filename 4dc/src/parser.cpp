@@ -26,7 +26,7 @@ Token* Parser::eatToken(const TokenType& type) {
   Logger::info << "Token: " << this->_tok.type() << std::endl;
   if (this->_tok != type) {
     std::stringstream ss;
-    ss << "Unexpected token " << this->_tok.type()<<"(\""<< this->_tok.str() << "\")"<< ", expected " << type;
+    ss << "Unexpected token " << this->_tok.type() << "(\"" << this->_tok.str() << "\")"<< ", expected " << type;
     Logger::error << "Parse Error: " << ss.str() << std::endl;
     return AST::Error<Token>(ss.str());
   }
@@ -74,10 +74,10 @@ VariableAST* Parser::localVariable() {
   
   std::string idName = this->_tok.str();
   // Consomme l'identifiant
-  if(this->_tok==TokenType::NUM){
+  if(this->_tok == TokenType::NUM){
     std::string number = this->_tok.str();
     this->eatToken();
-    Logger::warning << "Parse Warning: method parameter $"<<number<<" non-implemented" << std::endl;
+    Logger::warning << "Parse Warning: method parameter $" << number << " non-implemented" << std::endl;
     return new LocalVariableAST(idName);
   }
   if(!this->eatToken(TokenType::ID)) return nullptr;
@@ -141,22 +141,22 @@ BlocAST* Parser::bloc() {
   
   while(true){
     switch(this->_tok.type()){
-	case TokenType::ENDF:
-	case TokenType::ELSE:
-	case TokenType::ENDIF:
-	case TokenType::ENDFOR:
-	case TokenType::ENDWHILE:
-	case TokenType::UNTIL:
-	  return new BlocAST(statements); // sort du block
-	case TokenType::ENDL: // ne lit pas les lignes vides
-	  this->eatToken();
-	  break;
-	default:
-	  StatementAST* statement = this->statement();
-	  if(!statement) return nullptr;
-	  
-	  statements.push_back(statement);
-	}
+      case TokenType::ENDF:
+      case TokenType::ELSE:
+      case TokenType::ENDIF:
+      case TokenType::ENDFOR:
+      case TokenType::ENDWHILE:
+      case TokenType::UNTIL:
+    return new BlocAST(statements); // sort du block
+      case TokenType::ENDL: // ne lit pas les lignes vides
+    this->eatToken();
+    break;
+      default:
+    StatementAST* statement = this->statement();
+    if(!statement) return nullptr;
+    
+    statements.push_back(statement);
+  }
   }
   return nullptr;
 }
@@ -179,65 +179,65 @@ StatementAST* Parser::statement() {
   case TokenType::DOLLAR:
     variableAST = this->localVariable();
     if(!variableAST) break;
-	
-	//essaye le statement affectation
-	if(this->_tok==TokenType::AFFECT) return this->affectstatement(variableAST);
-	//essaye une expression
+  
+  //essaye le statement affectation
+  if(this->_tok==TokenType::AFFECT) return this->affectstatement(variableAST);
+  //essaye une expression
     expr = this->expression(variableAST);
-	if(!expr) return nullptr;
+  if(!expr) return nullptr;
 
-	if(this->_tok!=TokenType::ENDF&&!this->eatToken(TokenType::ENDL)) return nullptr;	
+  if(this->_tok!=TokenType::ENDF&&!this->eatToken(TokenType::ENDL)) return nullptr;  
     return new StatementExprAST(expr);
-	
+  
   case TokenType::DIAMOND:
     variableAST = persistantVariable();
     if(!variableAST) break;
 
-	//essaye le statement affectation
-	if(this->_tok==TokenType::AFFECT) return this->affectstatement(variableAST);
-	//essaye une expression
+  //essaye le statement affectation
+  if(this->_tok==TokenType::AFFECT) return this->affectstatement(variableAST);
+  //essaye une expression
     expr = this->expression(variableAST);
-	if(!expr) return nullptr;
+  if(!expr) return nullptr;
 
-	if(this->_tok!=TokenType::ENDF&&!this->eatToken(TokenType::ENDL)) return nullptr;	
+  if(this->_tok!=TokenType::ENDF&&!this->eatToken(TokenType::ENDL)) return nullptr;  
     return new StatementExprAST(expr);
 
   case TokenType::ID:
     //recupère l'identifiant puis le consomme
     varName = this->_tok.str();
-	this->eatToken();
-	
-	//essaye l'appel de fonction
-	if(this->_tok==TokenType::LEFTP){
+  this->eatToken();
+  
+  //essaye l'appel de fonction
+  if(this->_tok == TokenType::LEFTP){
       expr = this->callFunction(varName);
-	  if(!expr) return nullptr;
+    if(!expr) return nullptr;
 
-	  expr = this->expression(expr);
-	  if(!expr) return nullptr;
+    expr = this->expression(expr);
+    if(!expr) return nullptr;
 
-	  if(this->_tok!=TokenType::ENDF&&!this->eatToken(TokenType::ENDL)) return nullptr;
+    if(this->_tok!=TokenType::ENDF && !this->eatToken(TokenType::ENDL)) return nullptr;
       return new StatementExprAST(expr);
     }
     
-	variableAST = new GlobaleVariableAST(varName);
+  variableAST = new GlobaleVariableAST(varName);
 
-	//essaye le statement affectation
-	if(this->_tok==TokenType::AFFECT) return this->affectstatement(variableAST);
-	//essaye une expression
+  //essaye le statement affectation
+  if(this->_tok == TokenType::AFFECT) return this->affectstatement(variableAST);
+  //essaye une expression
     expr = this->expression(variableAST);
-	if(!expr) return nullptr;
+  if(!expr) return nullptr;
 
-	if(this->_tok!=TokenType::ENDF&&!this->eatToken(TokenType::ENDL)) return nullptr;	
+  if(this->_tok != TokenType::ENDF && !this->eatToken(TokenType::ENDL)) return nullptr;  
     return new StatementExprAST(expr);
     
   case TokenType::OP: //cas d'un operateur unaire en début d'expression
     expr = this->expression(nullptr);
-	if(!expr) return nullptr;
-	
-	if(this->_tok!=TokenType::ENDF&&!this->eatToken(TokenType::ENDL)) return nullptr;
+  if(!expr) return nullptr;
+  
+  if(this->_tok!=TokenType::ENDF && !this->eatToken(TokenType::ENDL)) return nullptr;
     return new StatementExprAST(expr);
   default:
-    Logger::error << "Parse Error: statement starting by the token "<< this->_tok.type() << " not handled" << std::endl;
+    Logger::error << "Parse Error: statement starting by the token " << this->_tok.type() << " not handled" << std::endl;
     return nullptr;    
   }
 }
@@ -250,7 +250,7 @@ StatementAST* Parser::affectstatement(VariableAST* variableAST){
   
   ExprAST* expr = this->expression(nullptr);
   if(!expr){
-    Logger::error << "Parse Error: expression expected after the affectation"<< std::endl;
+    Logger::error << "Parse Error: expression expected after the affectation" << std::endl;
     return nullptr;
   }
   
@@ -268,40 +268,40 @@ StatementAST* Parser::ifstatement() {
   
   // Consomme la parenthèse ouvrante
   if (!this->eatToken(TokenType::LEFTP)) return nullptr;
-	
+  
   // Parse la condition
   ifAST = this->expression(nullptr);
   if (!ifAST) return nullptr;
-	
+  
   // Consomme la parenthèse fermante
   if (!this->eatToken(TokenType::RIGHTP)) return nullptr;
   
-  if(this->_tok==TokenType::ENDL) this->eatToken();
+  if(this->_tok == TokenType::ENDL) this->eatToken();
 
   // Parse le bloc THEN
   thenAST = this->bloc();
   if (!thenAST) return nullptr;
 
   // Consomme le token ELSE
-  if (this->_tok==TokenType::ELSE){
+  if (this->_tok == TokenType::ELSE){
     this->eatToken();
-	
-    if(this->_tok==TokenType::ENDL) this->eatToken();
-	
+  
+    if(this->_tok == TokenType::ENDL) this->eatToken();
+  
     // Parse le bloc ELSE
     elseAST = this->bloc();
     if (!elseAST) return nullptr;
-	
-	// Consomme le token ENDIF
+  
+  // Consomme le token ENDIF
     this->eatToken(TokenType::ENDIF);
-	if(this->_tok==TokenType::ENDL) this->eatToken();
-	
-	return new IfAST(ifAST,thenAST, elseAST);
+  if(this->_tok == TokenType::ENDL) this->eatToken();
+  
+  return new IfAST(ifAST,thenAST, elseAST);
   }
 
   // Consomme le token ENDIF
   this->eatToken(TokenType::ENDIF);
-  if(this->_tok==TokenType::ENDL) this->eatToken();
+  if(this->_tok == TokenType::ENDL) this->eatToken();
     
   return new IfAST(ifAST, thenAST);
 }
@@ -329,14 +329,14 @@ StatementAST* Parser::forstatement() {
   case TokenType::DOLLAR:
     indexName = this->_tok.str();
     if(this->eatToken(TokenType::ID)) variableAST = new LocalVariableAST(indexName);
-	break;
+  break;
   case TokenType::DIAMOND:
     indexName = this->_tok.str();
     if(this->eatToken(TokenType::ID)) variableAST = new PersistentVariableAST(indexName);
-	break;
+  break;
   case TokenType::ID:
     variableAST = new GlobaleVariableAST(indexName);
-	break;
+  break;
   default:
     break;
   }
@@ -344,7 +344,7 @@ StatementAST* Parser::forstatement() {
   if(!variableAST){
     Logger::error << "Parse Error: variable token expected and not : "<< indexType << std::endl;
     variableAST =  AST::Error<GlobaleVariableAST>("variable token expected in the for arguements");
-	return nullptr;
+  return nullptr;
   }
   
   //Consomme le semi-colon
@@ -361,10 +361,10 @@ StatementAST* Parser::forstatement() {
   endAST = this->expression(nullptr);
   if (!beginAST) return nullptr;
 
-  if(this->_tok==TokenType::SEMICOL){  // y a t'il une expression pour l'incrementation ?
+  if(this->_tok == TokenType::SEMICOL){  // y a t'il une expression pour l'incrementation ?
     //Consomme le semi-colon
-	this->eatToken();
-	  
+  this->eatToken();
+    
     // Parse l'expression de debut de boucle
     incrementAST = this->expression(nullptr);
     if (!incrementAST) return nullptr;
@@ -375,7 +375,7 @@ StatementAST* Parser::forstatement() {
   // Consomme la parenthèse fermante
   if (!this->eatToken(TokenType::RIGHTP)) return nullptr;
   
-  if(this->_tok==TokenType::ENDL) this->eatToken();
+  if(this->_tok == TokenType::ENDL) this->eatToken();
 
   // Parse le bloc THEN
   bodyAST = this->bloc();
@@ -383,7 +383,7 @@ StatementAST* Parser::forstatement() {
 
   // Consomme le token ENDFOR
   this->eatToken(TokenType::ENDFOR);
-  if(this->_tok==TokenType::ENDL) this->eatToken();
+  if(this->_tok == TokenType::ENDL) this->eatToken();
     
   return new ForAST(variableAST, beginAST, endAST, incrementAST, bodyAST);
 }
@@ -399,15 +399,15 @@ StatementAST* Parser::whilestatement() {
   
   // Consomme la parenthèse ouvrante
   if (!this->eatToken(TokenType::LEFTP)) return nullptr;
-	
+  
   // Parse la condition
   whileAST = this->expression(nullptr);
   if (!whileAST) return nullptr;
-	
+  
   // Consomme la parenthèse fermante
   if (!this->eatToken(TokenType::RIGHTP)) return nullptr;
   
-  if(this->_tok==TokenType::ENDL) this->eatToken();
+  if(this->_tok == TokenType::ENDL) this->eatToken();
 
   // Parse le bloc de la boucle
   loopAST = this->bloc();
@@ -415,7 +415,7 @@ StatementAST* Parser::whilestatement() {
 
   // Consomme le token ENDWHILE
   this->eatToken(TokenType::ENDWHILE);
-  if(this->_tok==TokenType::ENDL) this->eatToken();
+  if(this->_tok == TokenType::ENDL) this->eatToken();
     
   return new WhileAST(whileAST, loopAST);
 }
@@ -429,7 +429,7 @@ StatementAST* Parser::repeatstatement() {
   // Consomme le token REPEAT
   this->eatToken();
   
-  if(this->_tok==TokenType::ENDL) this->eatToken();
+  if(this->_tok == TokenType::ENDL) this->eatToken();
 
   // Parse le bloc de la boucle
   loopAST = this->bloc();
@@ -440,15 +440,15 @@ StatementAST* Parser::repeatstatement() {
   
   // Consomme la parenthèse ouvrante
   if (!this->eatToken(TokenType::LEFTP)) return nullptr;
-	
+  
   // Parse la condition
   untilAST = this->expression(nullptr);
   if (!untilAST) return nullptr;
-	
+  
   // Consomme la parenthèse fermante
   if (!this->eatToken(TokenType::RIGHTP)) return nullptr;
   
-  if(this->_tok==TokenType::ENDL) this->eatToken();
+  if(this->_tok == TokenType::ENDL) this->eatToken();
     
   return new RepeatAST(untilAST, loopAST);
 }
@@ -467,10 +467,10 @@ ExprAST* Parser::expression(ExprAST *defineLHS) {
   if(this->_tok == TokenType::OP){
     
     ExprAST *leftAccumulatorExpr = this->binOpRHS(LHS);
-	while(this->_tok == TokenType::OP){
-	   leftAccumulatorExpr = this->binOpRHS(leftAccumulatorExpr);
-	}
-	return leftAccumulatorExpr;
+  while(this->_tok == TokenType::OP){
+     leftAccumulatorExpr = this->binOpRHS(leftAccumulatorExpr);
+  }
+  return leftAccumulatorExpr;
   }else{
     return LHS;
   }
@@ -479,15 +479,15 @@ ExprAST* Parser::expression(ExprAST *defineLHS) {
 ExprAST* Parser::uniOpExpr(){
   if(this->_tok == TokenType::OP){
     std::string uniOP = this->_tok.str();
-	
-	// On consomme l'opérateur	
+  
+  // On consomme l'opérateur  
     this->eatToken();
-	ExprAST *expr = this->primary();	//On récupére l'AST de la partie droite de l'opération
+  ExprAST *expr = this->primary();  //On récupére l'AST de la partie droite de l'opération
     if (!expr){
       Logger::error << "Parse Error: primary expression expected after operator '" << uniOP <<"'"<< std::endl;
       return nullptr;
     }
-	return new UniOpAST(uniOP,expr);
+  return new UniOpAST(uniOP,expr);
   }
   return this->primary();
 }
@@ -496,10 +496,10 @@ ExprAST* Parser::binOpRHS(ExprAST *LHS) {
   
   std::string binOP = this->_tok.str();
 
-  // On consomme l'opérateur	
+  // On consomme l'opérateur  
   this->eatToken();
 
-  ExprAST *RHS = this->uniOpExpr();	//On récupére l'AST de la partie droite de l'opération
+  ExprAST *RHS = this->uniOpExpr();  //On récupére l'AST de la partie droite de l'opération
   if (!RHS){
     Logger::error << "Parse Error: 2nd operand expected after operator '" << binOP <<"'"<< std::endl;
     return nullptr;

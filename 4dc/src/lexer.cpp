@@ -140,18 +140,18 @@ Token Lexer::eatSymbolToken()
     return TokenType::SEMICOL;
   case ':':
     if(chr1=='='){  // opérateur :=
-	  this->eatChr();
+    this->eatChr();
       return TokenType::AFFECT;
-	}
+  }
     return TokenType::COLON;
   case '$':
     return TokenType::DOLLAR;
   case '<':
   case '>':
     if(chr1=='='){ //operator '<=' or '>='
-	  this->eatChr();
-	}
-	return this->eatOpToken();
+    this->eatChr();
+  }
+  return this->eatOpToken();
   }
 
   // Diamond
