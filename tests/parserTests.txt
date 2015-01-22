@@ -1,6 +1,7 @@
 #Tests valides
 + parserTests/testIfNoBody.4d
 #Tests d'erreur
+- parserTests/errorAffectANonVariable.4d
 - parserTests/errorIfNoLParenthesis.4d
 - parserTests/errorIfNoRParenthesis.4d
 - parserTests/errorIfNoCondition.4d
