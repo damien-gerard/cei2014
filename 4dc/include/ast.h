@@ -5,7 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <initializer_list>
-//#include "llvm-dependencies.h"
+#include "llvm-dependencies.h"
 
 class Builder;
 

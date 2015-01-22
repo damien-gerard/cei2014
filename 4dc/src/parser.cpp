@@ -17,20 +17,20 @@ Parser::~Parser(){
 }
 
 Token* Parser::eatToken() {
-  Logger::info << "Token: " << this->_tok.type() << std::endl;
   this->_tok = this->_lexer.nextToken();
+  Logger::info << this->_tok << std::endl;
   return &this->_tok;
 }
 
 Token* Parser::eatToken(const TokenType& type) {
-  Logger::info << "Token: " << this->_tok.type() << std::endl;
   if (this->_tok != type) {
     std::stringstream ss;
-    ss << "Unexpected token " << this->_tok.type() << "(\"" << this->_tok.str() << "\")"<< ", expected " << type;
+    ss << "Unexpected token " << this->_tok << ", expected " << type;
     Logger::error << "Parse Error: " << ss.str() << std::endl;
     return AST::Error<Token>(ss.str());
   }
   this->_tok = this->_lexer.nextToken();
+  Logger::info << this->_tok << std::endl;
   return &this->_tok;
 }
 

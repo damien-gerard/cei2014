@@ -4,14 +4,19 @@
 #include "include/lexer.h"
 #include "include/parser.h"
 #include "include/ast.h"
+#include "include/builder.h"
 #include "include/util/logger.h"
 #include <fstream>
 
 using namespace std;
 
+void compileFile(istream&, Builder&);
+
 int main(int argc, char *argv[])
 {
-  Token t;
+  Builder builder;
+  builder.createJIT();
+  builder.setOptimizer(builder.getStandardOptimizer());
 
   bool readSTDIN = true;
   for(int i =1; i < argc; i++){
@@ -24,18 +29,7 @@ int main(int argc, char *argv[])
     Logger::info << "\"" << current_exec_name << "\" :" << endl;
     std::ifstream myfile(current_exec_name);
     if(myfile){
-      Lexer lex(myfile);
-
-
-      // while ((t = lex.nextToken()) != TokenType::ENDF) {
-        // Logger::info << "->" << t << endl;
-      // }
-    Parser parser(lex);
-    parser.parse();
-      if(!parser.ast()){
-        exit(EXIT_FAILURE);
-      }
-    Logger::info << *parser.ast() <<std::endl<<std::endl;
+      compileFile(myfile, builder);
     
     }else{
       Logger::error << "Error: cannot find \"" << current_exec_name << "\"" << endl;
@@ -45,74 +39,19 @@ int main(int argc, char *argv[])
   }
 
   if (readSTDIN) {
-    Lexer lex(cin);
-    // while ((t = lex.nextToken()) != TokenType::ENDF) {
-      // Logger::info << "->" << t << endl;
-    // }
-    Parser parser(lex);
-  parser.parse();
-    if(!parser.ast()){
-      exit(EXIT_FAILURE);
-    }
-  Logger::info << *parser.ast() <<std::endl<<std::endl;
+    compileFile(cin, builder);
   }
-
-  // AST* ast =  new BlocAST({
-                // new IfAST(
-                  // new OpAST("<=",
-                    // new OpAST("*",
-                      // new GlobaleVariableAST("test"),
-                      // new LiteralAST("2")
-                    // ),
-                    // new LiteralAST("10")
-                  // ),
-                  // new BlocAST({
-                    // new StatementExprAST(
-                      // new OpAST(":=",
-                        // new LocalVariableAST("foo"),
-                        // new OpAST("-",
-                          // new PersistentVariableAST("bar"),
-                          // new LiteralAST("4")
-                        // )
-                      // )
-                    // ),
-                    // new StatementExprAST(
-                      // new OpAST(":=",
-                        // new PersistentVariableAST("foo"),
-                        // new OpAST("+",
-                          // new LocalVariableAST("bar"),
-                          // new LiteralAST("7")
-                        // )
-                      // )
-                    // )
-                  // }),
-                  // new BlocAST({
-                    // new StatementExprAST(
-                      // new OpAST(":=",
-                        // new LocalVariableAST("foo"),
-                        // new OpAST("/",
-                          // new PersistentVariableAST("bar"),
-                          // new LiteralAST("2")
-                        // )
-                      // )
-                    // )
-                  // })
-                // ),
-                // new StatementExprAST(
-                  // new OpAST(":=",
-                    // new GlobaleVariableAST("test"),
-                    // new OpAST("-",
-                      // new OpAST("+",
-                        // new LocalVariableAST("foo"),
-                        // new PersistentVariableAST("bar")
-                      // ),
-                      // new LiteralAST("57")
-                    // )
-                  // )
-                // )}
-              // );
-        
-  // Logger::info << *ast;
-  // delete ast;
   return 0;
+}
+
+void compileFile(istream& file, Builder& builder) {
+  Lexer lexer(file);
+  Parser parser(lexer);
+  parser.parse();
+  AST* ast = parser.ast();
+  if (!ast) {
+    exit(EXIT_FAILURE);
+  }
+  Logger::info << *ast << endl << endl;
+  //builder.build(ast);
 }

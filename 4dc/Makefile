@@ -42,7 +42,7 @@ LLVM_LDFLAGS = $(shell $(LLVMDIR)/bin/llvm-config $(LLVM_CONFIG_LDFLAGS))
 
 
 INC_DEBUG = $(INC)
-CFLAGS_DEBUG = $(CFLAGS) -Wall -g -Wno-multichar
+CFLAGS_DEBUG = $(CFLAGS) -Wall -g
 RESINC_DEBUG = $(RESINC)
 RCFLAGS_DEBUG = $(RCFLAGS)
 LIBDIR_DEBUG = $(LIBDIR)
@@ -56,7 +56,7 @@ OUTDIR_DEBUG = bin/Debug
 OUT_DEBUG = $(OUTDIR_DEBUG)/4dc
 
 INC_RELEASE = $(INC)
-CFLAGS_RELEASE = $(CFLAGS) -O2 -Wall -Wno-multichar
+CFLAGS_RELEASE = $(CFLAGS) -O2 -Wall
 RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR)
@@ -107,7 +107,7 @@ $(OUT_DEBUG): $(INCLUDE) $(OBJ_DEBUG) $(DEP_DEBUG)
 
 $(OBJDIR_DEBUG)/%.o : %.cpp ${INCLUDES} ##  $${shell $(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -MM $(LLVM_CFLAGS_DEBUG) $$<}
 	$(MKDIR) "$(dir $@)"; true
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c "$<" -o "$@" $(LLVM_CFLAGS_DEBUG)
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c $< -o $@ $(LLVM_CFLAGS_DEBUG)
 
 cleanDebug: clean_debug
 clean_debug:
@@ -133,7 +133,7 @@ $(OUT_RELEASE): $(OBJ_RELEASE) $(DEP_RELEASE)
 
 $(OBJDIR_RELEASE)/%.o : %.cpp ${INCLUDES} ##  $${shell $(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -MM $(LLVM_CFLAGS_DEBUG) $$<}
 	$(MKDIR) "$(dir $@)"; true
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c "$<" -o "$@" $(LLVM_CFLAGS_RELEASE)
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c $< -o $@ $(LLVM_CFLAGS_RELEASE)
 
 cleanRelease: clean_release
 clean_release:
