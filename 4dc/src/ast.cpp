@@ -24,6 +24,11 @@ string AST::toString(const std::string& firstPrefix, const std::string& prefix) 
   return this->_toString(firstPrefix, prefix);
 }
 
+bool AST::_isVar() const
+{
+  return false;
+}
+
 ostream& operator<<(ostream& out, const AST& ast)
 {
   return out << ast.toString("", "");
@@ -332,6 +337,12 @@ Value* LiteralAST::Codegen(Builder& b)
  * VariableAST
  */
 VariableAST::~VariableAST() = default;
+
+bool VariableAST::_isVar() const
+{
+  return true;
+}
+
 /*
 Value* VariableAST::Codegen(Builder& b)
 {

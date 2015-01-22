@@ -179,7 +179,10 @@ StatementAST* Parser::statement() {
     
     if(this->_tok == TokenType::AFFECT){
       //verifie que expr est une variable.
-      //@todo
+      if (!expr->isVar()) {
+        Logger::error << "Parse Error: " << *expr << " is not a variable." << std::endl;
+        exit(EXIT_FAILURE);
+      }
       
       // On consumme l'affectation
       this->eatToken();

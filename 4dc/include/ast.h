@@ -15,11 +15,13 @@ class AST
     virtual ~AST();
 
     std::string toString(const std::string& firstPrefix, const std::string& prefix) const;
+    inline bool isVar() const {return this->_isVar();}
 
     template<class T = AST>
     static T* Error(const std::string& msg);
     friend std::ostream& operator<<(std::ostream& out, const AST& ast);
   protected:
+    virtual bool _isVar() const;
   private:
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
@@ -176,6 +178,7 @@ class VariableAST : public ExprAST
     virtual ~VariableAST();
     //virtual llvm::Value* Codegen(Builder&);
   protected:
+    virtual bool _isVar() const;
   private:
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
