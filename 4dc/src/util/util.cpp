@@ -33,4 +33,14 @@ namespace Util {
     transform(str.begin(), str.end(), str.begin(), ::toupper);
     return str;
   }
+  
+  double str2dbl(const std::string& str)
+  {
+    return strtod(str.c_str(), 0);
+  }
+  
+  long str2long(const std::string& str)
+  {
+    return strtol(str.c_str(), nullptr, 0);
+  }
 }

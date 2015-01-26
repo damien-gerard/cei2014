@@ -2,10 +2,10 @@
 #include <iostream>
 #include <sstream>
 #include "../include/util/util.h"
-//#include "../include/builder.h"
+#include "../include/builder.h"
 
 using namespace std;
-//using namespace llvm;
+using namespace llvm;
 
 const string NAMED_PREFIX_BEGIN   = "> ";
 const string NAMED_PREFIX_MIDDLE  = "| ";
@@ -326,12 +326,12 @@ string LiteralAST::_toString(const string& firstPrefix, const string& prefix) co
   ss  << firstPrefix << "Expression::Literal " << this->_val << endl;
   return ss.str();
 }
-/*
+
 Value* LiteralAST::Codegen(Builder& b)
 {
-  return ConstantFP::get(getGlobalContext(), APFloat(this->_val));
+  return ConstantInt::get(getGlobalContext(), APInt(32, Util::str2long(this->_val), true));
 }
-*/
+
 
 /**
  * VariableAST
@@ -365,6 +365,11 @@ string LocalVariableAST::_toString(const string& firstPrefix, const string& pref
   return ss.str();
 }
 
+Value* LocalVariableAST::Codegen(Builder& b)
+{
+  Value* V = b.localVars()[this->_name];
+  return V ? V : AST::Error<Value>("Unknown local variable name");
+}
 
 /**
  * GlobaleVariableAST
@@ -381,6 +386,12 @@ string GlobaleVariableAST::_toString(const string& firstPrefix, const string& pr
   return ss.str();
 }
 
+Value* GlobaleVariableAST::Codegen(Builder& b)
+{
+  Value* V = b.globalVars()[this->_name];
+  return V ? V : AST::Error<Value>("Unknown global variable name");
+}
+
 
 /**
  * PersistentVariableAST
@@ -395,6 +406,12 @@ string PersistentVariableAST::_toString(const string& firstPrefix, const string&
   stringstream ss;
   ss  << firstPrefix << "Expression::Variable <>" << this->_name << endl;
   return ss.str();
+}
+
+Value* PersistentVariableAST::Codegen(Builder& b)
+{
+  Value* V = b.persistentVars()[this->_name];
+  return V ? V : AST::Error<Value>("Unknown persistent variable name");
 }
 
 
@@ -421,6 +438,17 @@ string UniOpAST::_toString(const string& firstPrefix, const string& prefix) cons
   return ss.str();
 }
 
+Value* UniOpAST::Codegen(Builder& b)
+{
+
+  Value *L = this->_expr->Codegen(b);
+  if (!L) return nullptr;
+  
+  if (this->_str == "+") return L;
+  if (this->_str == "-") return b.irbuilder().CreateNeg(L, "negtmp");
+  return AST::Error<Value>("invalid unary operator");
+}
+
 /**
  * BinOpAST
  */
@@ -445,7 +473,7 @@ string BinOpAST::_toString(const string& firstPrefix, const string& prefix) cons
   ss  << this->_rhs->toString(nextFirstPrefix, nextPrefix);
   return ss.str();
 }
-/*
+
 Value* BinOpAST::Codegen(Builder& b)
 {
 
@@ -454,24 +482,26 @@ Value* BinOpAST::Codegen(Builder& b)
   if (!L || !R) {
     return nullptr;
   }
-
-  switch (this->_chr) {
-  case '+':
-    return b.irbuilder().CreateFAdd(L, R, "addtmp");
-  case '-':
-    return b.irbuilder().CreateFSub(L, R, "subtmp");
-  case '*':
-    return b.irbuilder().CreateFMul(L, R, "multmp");
-  case '<':
-    L = b.irbuilder().CreateFCmpULT(L, R, "cmptmp");
-    // Convert bool 0/1 to double 0.0 or 1.0
-    return b.irbuilder().CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()),
-                                      "booltmp");
-  default:
-    return AST::Error<Value>("invalid binary operator");
-  }
+  
+  // Opérations arithmétiques
+  if (this->_str == "+") return b.irbuilder().CreateAdd(L, R, "addtmp");
+  if (this->_str == "-") return b.irbuilder().CreateSub(L, R, "subtmp");
+  if (this->_str == "*") return b.irbuilder().CreateMul(L, R, "multmp");
+  if (this->_str == "/") return b.irbuilder().CreateSDiv(L, R, "divtmp");
+  
+  // Comparaisons
+  if (this->_str == "<")  return b.irbuilder().CreateICmpSLT(L, R, "lttmp");
+  if (this->_str == "<=") return b.irbuilder().CreateICmpSLE(L, R, "letmp");
+  if (this->_str == ">")  return b.irbuilder().CreateICmpSGT(L, R, "gttmp");
+  if (this->_str == ">=") return b.irbuilder().CreateICmpSGE(L, R, "getmp");
+  
+  // Opérateurs logiques
+  if (this->_str == "&&")  return b.irbuilder().CreateAnd(L, R, "ortmp");
+  if (this->_str == "||") return b.irbuilder().CreateOr(L, R, "andtmp");
+  if (this->_str == "^")  return b.irbuilder().CreateXor(L, R, "xortmp");
+  return AST::Error<Value>("invalid binary operator");
 }
-*/
+
 
 /**
  * CallAST
@@ -505,7 +535,7 @@ string CallAST::_toString(const string& firstPrefix, const string& prefix) const
   }
   return ss.str();
 }
-/*
+
 Value* CallAST::Codegen(Builder& b)
 {
   // Look up the name in the global module table.
@@ -532,7 +562,7 @@ Value* CallAST::Codegen(Builder& b)
 
   return b.irbuilder().CreateCall(CalleeF, ArgsV, "calltmp");
 }
-*/
+
 
 /**
  * DefinitionAST

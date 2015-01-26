@@ -152,7 +152,7 @@ class ExprAST : public AST
 {
   public:
     virtual ~ExprAST();
-    //virtual llvm::Value* Codegen(Builder&) = 0;
+    virtual llvm::Value* Codegen(Builder&) = 0;
   protected:
   private:
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
@@ -163,7 +163,7 @@ class LiteralAST : public ExprAST
   public:
     LiteralAST(const std::string& val);
     virtual ~LiteralAST();
-    //virtual llvm::Value* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     std::string _val;
@@ -176,7 +176,7 @@ class VariableAST : public ExprAST
   public:
     //VariableAST(const std::string &) = 0;
     virtual ~VariableAST();
-    //virtual llvm::Value* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&) = 0;
   protected:
     virtual bool _isVar() const;
   private:
@@ -188,7 +188,7 @@ class LocalVariableAST : public VariableAST
   public:
     LocalVariableAST(const std::string &);
     virtual ~LocalVariableAST();
-    //virtual llvm::Value* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     std::string _name;
@@ -201,7 +201,7 @@ class GlobaleVariableAST : public VariableAST
   public:
     GlobaleVariableAST(const std::string &);
     virtual ~GlobaleVariableAST();
-    //virtual llvm::Value* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     std::string _name;
@@ -214,7 +214,7 @@ class PersistentVariableAST : public VariableAST
   public:
     PersistentVariableAST(const std::string &);
     virtual ~PersistentVariableAST();
-    //virtual llvm::Value* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     std::string _name;
@@ -227,7 +227,7 @@ class UniOpAST : public ExprAST
   public:
     UniOpAST(const std::string& op, ExprAST* expr);
     virtual ~UniOpAST();
-    //virtual llvm::Value* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     std::string _str;
@@ -241,7 +241,7 @@ class BinOpAST : public ExprAST
   public:
     BinOpAST(const std::string& op, ExprAST* lhs, ExprAST* rhs);
     virtual ~BinOpAST();
-    //virtual llvm::Value* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     std::string _str;
@@ -255,7 +255,7 @@ class CallAST : public ExprAST
   public:
     CallAST(const std::string&, const std::vector<ExprAST*>&);
     virtual ~CallAST();
-    //virtual llvm::Value* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     std::string _name;

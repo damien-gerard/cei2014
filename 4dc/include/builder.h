@@ -20,12 +20,13 @@ class Builder
 
     llvm::FunctionPassManager* getStandardOptimizer();
 
-    /*friend llvm::Value* VariableAST::Codegen(Builder&);
-    friend llvm::Value* OpAST::Codegen(Builder&);
+    friend llvm::Value* LiteralAST::Codegen(Builder&);
+    friend llvm::Value* LocalVariableAST::Codegen(Builder&);
+    friend llvm::Value* GlobaleVariableAST::Codegen(Builder&);
+    friend llvm::Value* PersistentVariableAST::Codegen(Builder&);
+    friend llvm::Value* UniOpAST::Codegen(Builder&);
+    friend llvm::Value* BinOpAST::Codegen(Builder&);
     friend llvm::Value* CallAST::Codegen(Builder&);
-    friend llvm::Value* IfAST::Codegen(Builder&);
-    friend llvm::Function* PrototypeAST::Codegen(Builder&);
-    friend llvm::Function* FunctionAST::Codegen(Builder&);*/
   protected:
     inline llvm::Module& module()
     {
