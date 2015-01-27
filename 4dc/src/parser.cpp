@@ -5,7 +5,7 @@
 #include <sstream>
 
 Parser::Parser(Lexer& lex)
-: _lexer(lex)
+: _lexer(lex), _currentLine(1)
 {
   this->eatToken();
 }
@@ -16,7 +16,16 @@ Parser::~Parser(){
   }
 }
 
+std::string Parser::getErrorHeader(){
+  std::stringstream ss;
+  ss << "Parse Error line(" << this->_currentLine << ") : ";
+  return ss.str();
+}
+
 Token* Parser::eatToken() {
+  if (this->_tok == TokenType::ENDL) {
+    this->_currentLine ++;
+  }
   this->_tok = this->_lexer.nextToken();
   Logger::info << this->_tok << std::endl;
   return &this->_tok;
@@ -26,7 +35,7 @@ Token* Parser::eatToken(const TokenType& type) {
   if (this->_tok != type) {
     std::stringstream ss;
     ss << "Unexpected token " << this->_tok << ", expected " << type;
-    Logger::error << "Parse Error: " << ss.str() << std::endl;
+    Logger::error << this->getErrorHeader() << ss.str() << std::endl;
     return AST::Error<Token>(ss.str());
   }
   this->_tok = this->_lexer.nextToken();
@@ -117,7 +126,7 @@ ExprAST* Parser::callFunction(std::string functionName){
       }
 
       if (!this->eatToken(TokenType::SEMICOL)){
-        Logger::error << "Parse Error: right parenthesis ')' expected" << std::endl;
+        Logger::error << this->getErrorHeader() << " right parenthesis ')' expected" << std::endl;
         return nullptr;
       }
     }
@@ -180,7 +189,7 @@ StatementAST* Parser::statement() {
     if(this->_tok == TokenType::AFFECT){
       //verifie que expr est une variable.
       if (!expr->isVar()) {
-        Logger::error << "Parse Error: " << *expr << " is not a variable." << std::endl;
+        Logger::error << this->getErrorHeader() << *expr << " is not a variable." << std::endl;
         exit(EXIT_FAILURE);
       }
       
@@ -285,7 +294,7 @@ StatementAST* Parser::forstatement() {
   }
   
   if(!variableAST){
-    Logger::error << "Parse Error: variable token expected and not : "<< indexType << std::endl;
+    Logger::error << this->getErrorHeader() << "variable token expected and not : "<< indexType << std::endl;
     variableAST =  AST::Error<GlobaleVariableAST>("variable token expected in the for arguements");
   return nullptr;
   }
@@ -425,7 +434,7 @@ ExprAST* Parser::uniOpExpr(){
     this->eatToken();
   ExprAST *expr = this->primary();  //On récupére l'AST de la partie droite de l'opération
     if (!expr){
-      Logger::error << "Parse Error: primary expression expected after operator '" << uniOP <<"'"<< std::endl;
+      Logger::error << this->getErrorHeader() << "primary expression expected after operator '" << uniOP <<"'"<< std::endl;
       return nullptr;
     }
   return new UniOpAST(uniOP,expr);
@@ -442,7 +451,7 @@ ExprAST* Parser::binOpRHS(ExprAST *LHS) {
 
   ExprAST *RHS = this->uniOpExpr();  //On récupére l'AST de la partie droite de l'opération
   if (!RHS){
-    Logger::error << "Parse Error: 2nd operand expected after operator '" << binOP <<"'"<< std::endl;
+    Logger::error << this->getErrorHeader() << "2nd operand expected after operator '" << binOP <<"'"<< std::endl;
     return nullptr;
   }
 
@@ -464,7 +473,7 @@ ExprAST* Parser::primary() {
   case TokenType::LEFTP:
     return this->parenthesis();
   default:
-    Logger::error << "Parse Error: unknown token when expecting an expression : " << this->_tok.type() << std::endl;
+    Logger::error << this->getErrorHeader() << "unknown token when expecting an expression : " << this->_tok.type() << std::endl;
     return AST::Error<ExprAST>("unknown token when expecting an expression");
   }
 }

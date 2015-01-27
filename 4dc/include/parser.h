@@ -17,7 +17,10 @@ class Parser
   private:
     Lexer& _lexer;
     Token _tok;
-  AST* _ast;
+    AST* _ast;
+    int _currentLine;
+    
+    std::string getErrorHeader();
 
     Token* eatToken();
     Token* eatToken(const TokenType&);
