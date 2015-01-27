@@ -40,6 +40,15 @@
 *.depend
 *.layout
 
+# Visual Studio
+Debug
+Release
+
 # LLVM
 llvm-build/*
 llvm-src/*
+
+tuto/llvm/fib
+tuto/llvm/fib.exe
+
+
