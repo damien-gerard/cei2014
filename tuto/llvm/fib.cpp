@@ -146,8 +146,8 @@ namespace // anonymous
 
 			// 'then' block is finished - tell to jump to the continuation block
 			builder.CreateBr(mergeBlk);
-			// the code emitted within the 'then' block may have changed - not in this exemple but this
-			// may happen in some more complex code
+			// the code emitted within the 'else' block may include other new blocks
+			// (not in this exemple but this may happen in some more complex code)
 			thenBlk = builder.GetInsertBlock();
 
 			return contant;
@@ -186,8 +186,8 @@ namespace // anonymous
 
 			// 'else' block is finished - tell to jump to the continuation block
 			builder.CreateBr(mergeBlk);
-			// the code emitted within the 'else' block may have changed - not in this exemple but this
-			// may happen in some more complex code
+			// the code emitted within the 'else' block may include other new blocks
+			// (not in this exemple but this may happen in some more complex code)
 			elseBlk = builder.GetInsertBlock();
 
 			return sum;
