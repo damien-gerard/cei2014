@@ -9,7 +9,9 @@ Builder::Builder()
 {}
 Builder::Builder(const std::string& name)
   : _mod(new Module(name, getGlobalContext())),
-    _irb(getGlobalContext()), _jit(nullptr), _optimizer(nullptr)
+    _irb(getGlobalContext()), _ctx(_mod->getContext()),
+    _currentBlock(nullptr),
+    _jit(nullptr), _optimizer(nullptr)
 {}
 
 Builder::~Builder()
@@ -30,7 +32,7 @@ void Builder::build(AST* ast)
 {
   Function* F;
   DefinitionAST* def = nullptr;
-  ExprAST* expr = nullptr;
+  BasicBlock* bloc = nullptr;
   /*
   do {
     ast = this->_parser.parseLine();
@@ -76,6 +78,20 @@ void Builder::build(AST* ast)
 
   } while (ast);
   */
+  
+  PrototypeAST* proto = new PrototypeAST("", std::vector<std::string>());
+  def = new FunctionAST(proto, dynamic_cast<BlocAST*>(ast));
+  if (def) {
+    std::cerr << "Dump: ";
+    F = def->Codegen(*this);
+    if (F) {
+      F->dump();
+    } else {
+      std::cerr << "empty" << std::endl;
+    }
+  }
+  
+  //dynamic_cast<BlocAST*>(ast)->Codegen(*this);
   this->_mod->dump();
 }
 

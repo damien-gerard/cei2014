@@ -41,7 +41,8 @@ class BlocAST : public AST
     BlocAST(std::initializer_list<StatementAST*>);
     BlocAST(const std::vector<StatementAST*>&);
     virtual ~BlocAST();
-    //virtual llvm::???* Codegen(Builder&) = 0;
+    virtual llvm::BasicBlock* Codegen(Builder&, llvm::Function* = nullptr);
+    virtual llvm::BasicBlock* Codegen(Builder&, const std::string&, llvm::Function* = nullptr);
   protected:
   private:
     std::vector<StatementAST*> _statements; // delete at destruction
@@ -53,7 +54,7 @@ class StatementAST : public AST
 {
   public:
     virtual ~StatementAST();
-    //virtual llvm::???* Codegen(Builder&) = 0;
+    virtual llvm::Value* Codegen(Builder&) = 0;
   protected:
   private:
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
@@ -65,7 +66,7 @@ class StatementExprAST : public StatementAST
   public:
     StatementExprAST(ExprAST*);
     virtual ~StatementExprAST();
-    //virtual llvm::???* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     ExprAST* _expr; // delete at destruction
@@ -78,7 +79,7 @@ class AffectationAST : public StatementAST
   public:
     AffectationAST(VariableAST * variableAST, ExprAST* expr);
     virtual ~AffectationAST();
-    //virtual llvm::???* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     VariableAST * _variableAST;
@@ -93,7 +94,7 @@ class IfAST : public StatementAST
     IfAST(ExprAST* condAST, BlocAST* thenAST);
     IfAST(ExprAST* condAST, BlocAST* thenAST, BlocAST* elseAST);
     virtual ~IfAST();
-    //virtual llvm::???* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     ExprAST *_condAST; // delete at destruction
@@ -108,7 +109,7 @@ class ForAST : public StatementAST
   public:
     ForAST(VariableAST * variableAST, ExprAST * beginAST, ExprAST * endAST, ExprAST * incrementAST, BlocAST* loopAST);
     virtual ~ForAST();
-    //virtual llvm::???* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     VariableAST * _variableAST;
@@ -125,7 +126,7 @@ class WhileAST : public StatementAST
   public:
     WhileAST(ExprAST* condAST, BlocAST* loopAST);
     virtual ~WhileAST();
-    //virtual llvm::???* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     ExprAST *_condAST;
@@ -139,7 +140,7 @@ class RepeatAST : public StatementAST
   public:
     RepeatAST(ExprAST* condAST, BlocAST* loopAST);
     virtual ~RepeatAST();
-    //virtual llvm::???* Codegen(Builder&);
+    virtual llvm::Value* Codegen(Builder&);
   protected:
   private:
     ExprAST *_condAST;
@@ -269,7 +270,7 @@ class DefinitionAST : public AST
 {
   public:
     virtual ~DefinitionAST() = default;
-    //virtual llvm::Function* Codegen(Builder&) = 0;
+    virtual llvm::Function* Codegen(Builder&) = 0;
   protected:
   private:
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
@@ -280,7 +281,7 @@ class PrototypeAST : public DefinitionAST
   public:
     PrototypeAST(const std::string&, const std::vector<std::string>&);
     virtual ~PrototypeAST();
-    //virtual llvm::Function* Codegen(Builder&);
+    virtual llvm::Function* Codegen(Builder&);
   protected:
   private:
     std::string _name;
@@ -294,7 +295,7 @@ class FunctionAST : public DefinitionAST
   public:
     FunctionAST(PrototypeAST*, BlocAST*);
     virtual ~FunctionAST();
-    //virtual llvm::Function* Codegen(Builder&);
+    virtual llvm::Function* Codegen(Builder&);
   protected:
   private:
     PrototypeAST* _proto; // keep at destruction

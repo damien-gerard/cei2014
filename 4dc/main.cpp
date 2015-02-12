@@ -53,5 +53,5 @@ void compileFile(istream& file, Builder& builder) {
     exit(EXIT_FAILURE);
   }
   Logger::info << *ast << endl << endl;
-  //builder.build(ast);
+  builder.build(ast);
 }

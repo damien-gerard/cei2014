@@ -54,6 +54,22 @@ BlocAST::~BlocAST()
   }
 }
 
+BasicBlock* BlocAST::Codegen(Builder& b, Function* f)
+{
+  return this->Codegen(b, "block", f);
+}
+BasicBlock* BlocAST::Codegen(Builder& b, const std::string& name, Function* f)
+{
+  BasicBlock* block = BasicBlock::Create(b.context(), name, f);
+  b.currentBlock() = block;
+  b.irbuilder().SetInsertPoint(block);
+  for (auto& statement : this->_statements) {
+    statement->Codegen(b);
+  }
+  //block = b.irbuilder().GetInsertBlock();
+  return block;
+}
+
 string BlocAST::_toString(const string& firstPrefix, const string& prefix) const
 {
   string nextFirstPrefix, nextPrefix;
@@ -88,6 +104,11 @@ StatementExprAST::~StatementExprAST()
   delete this->_expr;
 }
 
+Value* StatementExprAST::Codegen(Builder& b)
+{
+  return this->_expr->Codegen(b);
+}
+
 string StatementExprAST::_toString(const string& firstPrefix, const string& prefix) const
 {
   string nextFirstPrefix, nextPrefix;
@@ -110,6 +131,11 @@ AffectationAST::~AffectationAST()
 {
   delete this->_variableAST;
   delete this->_expr;
+}
+
+Value* AffectationAST::Codegen(Builder& b)
+{
+  return nullptr;
 }
 
 string AffectationAST::_toString(const string& firstPrefix, const string& prefix) const
@@ -140,6 +166,11 @@ IfAST::~IfAST()
   delete this->_condAST;
   delete this->_thenAST;
   if (this->_elseAST) delete this->_elseAST;
+}
+
+Value* IfAST::Codegen(Builder& b)
+{
+  return nullptr;
 }
 
 string IfAST::_toString(const string& firstPrefix, const string& prefix) const
@@ -241,6 +272,11 @@ ForAST::~ForAST()
   delete this->_loopAST;
 }
 
+Value* ForAST::Codegen(Builder& b)
+{
+  return nullptr;
+}
+
 string ForAST::_toString(const string& firstPrefix, const string& prefix) const
 {
   string nextFirstPrefix, nextPrefix;
@@ -271,6 +307,11 @@ WhileAST::~WhileAST()
   delete this->_loopAST;
 }
 
+Value* WhileAST::Codegen(Builder& b)
+{
+  return nullptr;
+}
+
 string WhileAST::_toString(const string& firstPrefix, const string& prefix) const
 {
   string nextPrefix = prefix + PREFIX_MIDDLE;
@@ -293,6 +334,11 @@ RepeatAST::~RepeatAST()
 {
   delete this->_condAST;
   delete this->_loopAST;
+}
+
+Value* RepeatAST::Codegen(Builder& b)
+{
+  return nullptr;
 }
 
 string RepeatAST::_toString(const string& firstPrefix, const string& prefix) const
@@ -329,7 +375,7 @@ string LiteralAST::_toString(const string& firstPrefix, const string& prefix) co
 
 Value* LiteralAST::Codegen(Builder& b)
 {
-  return ConstantInt::get(getGlobalContext(), APInt(32, Util::str2long(this->_val), true));
+  return ConstantInt::get(b.context(), APInt(32, Util::str2long(this->_val), true));
 }
 
 
@@ -483,11 +529,12 @@ Value* BinOpAST::Codegen(Builder& b)
     return nullptr;
   }
   
+  auto* BB = b.currentBlock();
   // Opérations arithmétiques
-  if (this->_str == "+") return b.irbuilder().CreateAdd(L, R, "addtmp");
-  if (this->_str == "-") return b.irbuilder().CreateSub(L, R, "subtmp");
-  if (this->_str == "*") return b.irbuilder().CreateMul(L, R, "multmp");
-  if (this->_str == "/") return b.irbuilder().CreateSDiv(L, R, "divtmp");
+  if (this->_str == "+") return b.irbuilder().CreateAdd(L, R, "addtmp", BB);
+  if (this->_str == "-") return b.irbuilder().CreateSub(L, R, "subtmp", BB);
+  if (this->_str == "*") return b.irbuilder().CreateMul(L, R, "multmp", BB);
+  if (this->_str == "/") return b.irbuilder().CreateSDiv(L, R, "divtmp", BB);
   
   // Comparaisons
   if (this->_str == "<")  return b.irbuilder().CreateICmpSLT(L, R, "lttmp");
@@ -589,13 +636,13 @@ string PrototypeAST::_toString(const string& firstPrefix, const string& prefix) 
   ss  << ")" << endl;
   return ss.str();
 }
-/*
+
 Function* PrototypeAST::Codegen(Builder& b)
 {
   // Make the function type:  double(double,double) etc.
   std::vector<Type*> Doubles(this->_args.size(),
-                             Type::getDoubleTy(getGlobalContext()));
-  FunctionType *FT = FunctionType::get(Type::getDoubleTy(getGlobalContext()),
+                             Type::getDoubleTy(b.context()));
+  FunctionType *FT = FunctionType::get(Type::getDoubleTy(b.context()),
                                        Doubles, false);
 
   Function *F = Function::Create(FT, Function::ExternalLinkage, this->_name, &b.module());
@@ -626,11 +673,11 @@ Function* PrototypeAST::Codegen(Builder& b)
     fargsi->setName(*argsi);
 
     // Add arguments to variable symbol table.
-    b.namedValues()[*argsi] = fargsi;
+    b.localVars()[*argsi] = fargsi;
   }
   return F;
 }
-*/
+
 
 /**
  * FunctionAST
@@ -655,16 +702,33 @@ string FunctionAST::_toString(const string& firstPrefix, const string& prefix) c
   ss  << this->_body->toString(nextFirstPrefix, nextPrefix);
   return ss.str();
 }
-/*
+
 Function* FunctionAST::Codegen(Builder& b)
 {
-  b.namedValues().clear();
+  b.localVars().clear();
 
   Function *f = this->_proto->Codegen(b);
   if (!f) {
     return nullptr;
   }
+  
+  BasicBlock *block = this->_body->Codegen(b, f);
+  if (block) {
+    cout << "pouet" << block->size() << endl;
+    b.irbuilder().SetInsertPoint(block);
+    // Finish off the function.
+    b.irbuilder().CreateRet(block->getTerminator());
 
+    // Validate the generated code, checking for consistency.
+    verifyFunction(*f);
+
+    //b.optimize(f);
+
+    return f;
+  }
+  
+  return nullptr;
+/*
   // Create a new basic block to start insertion into.
   BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "entry", f);
   b.irbuilder().SetInsertPoint(BB);
@@ -684,5 +748,6 @@ Function* FunctionAST::Codegen(Builder& b)
   // Error reading body, remove function.
   f->eraseFromParent();
   return nullptr;
+  */
 }
-*/
+

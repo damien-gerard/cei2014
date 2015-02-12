@@ -20,6 +20,7 @@ class Builder
 
     llvm::FunctionPassManager* getStandardOptimizer();
 
+    friend llvm::BasicBlock* BlocAST::Codegen(Builder&, const std::string&, llvm::Function*);
     friend llvm::Value* LiteralAST::Codegen(Builder&);
     friend llvm::Value* LocalVariableAST::Codegen(Builder&);
     friend llvm::Value* GlobaleVariableAST::Codegen(Builder&);
@@ -27,15 +28,13 @@ class Builder
     friend llvm::Value* UniOpAST::Codegen(Builder&);
     friend llvm::Value* BinOpAST::Codegen(Builder&);
     friend llvm::Value* CallAST::Codegen(Builder&);
+    friend llvm::Function* PrototypeAST::Codegen(Builder&);
+    friend llvm::Function* FunctionAST::Codegen(Builder&);
   protected:
-    inline llvm::Module& module()
-    {
-      return *this->_mod;
-    }
-    inline llvm::IRBuilder<>& irbuilder()
-    {
-      return this->_irb;
-    }
+    inline llvm::Module& module() {return *this->_mod;}
+    inline llvm::LLVMContext& context(){return this->_ctx;}
+    inline llvm::BasicBlock*& currentBlock(){return this->_currentBlock;}
+    inline llvm::IRBuilder<>& irbuilder(){return this->_irb;}
     //inline llvm::ExecutionEngine* jit() {return this->_jit;}
     //inline llvm::FunctionPassManager* optimizer() {return *this->_optimizer;}
     inline std::map<std::string, llvm::Value*>& localVars()      {return this->_localVars;     }
@@ -45,6 +44,8 @@ class Builder
   private:
     llvm::Module* _mod; // delete at destruction
     llvm::IRBuilder<> _irb;
+    llvm::LLVMContext& _ctx;
+    llvm::BasicBlock* _currentBlock;
     llvm::ExecutionEngine* _jit; // delete at destruction
     llvm::FunctionPassManager* _optimizer; // delete at destruction
     std::map<std::string, llvm::Value*> _localVars;
