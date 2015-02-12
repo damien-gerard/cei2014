@@ -29,7 +29,7 @@ class Parser
     ExprAST* binOpRHS(ExprAST* LHS);
     ExprAST* primary();
     ExprAST* uniOpExpr();
-    ExprAST* literal();
+    ExprAST* literal(VarType vtype);
     ExprAST* parenthesis();
     ExprAST* identifier();
     ExprAST* callFunction(std::string functionName);

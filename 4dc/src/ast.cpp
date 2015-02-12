@@ -1,6 +1,7 @@
 #include "../include/ast.h"
 #include <iostream>
 #include <sstream>
+#include "../include/util/logger.h"
 #include "../include/util/util.h"
 #include "../include/builder.h"
 
@@ -29,6 +30,7 @@ bool AST::_isVar() const
   return false;
 }
 
+
 ostream& operator<<(ostream& out, const AST& ast)
 {
   return out << ast.toString("", "");
@@ -51,6 +53,13 @@ BlocAST::~BlocAST()
 {
   for (auto& statement : this->_statements) {
     delete statement;
+  }
+}
+
+void BlocAST::_defType(){
+  int length = this->_statements.size();
+  for (int i = 0 ; i < length ; ++i) {
+    this->_statements[i]->defineType();
   }
 }
 
@@ -104,6 +113,10 @@ StatementExprAST::~StatementExprAST()
   delete this->_expr;
 }
 
+void StatementExprAST::_defType(){
+  this->_expr->defineType();
+}
+
 Value* StatementExprAST::Codegen(Builder& b)
 {
   return this->_expr->Codegen(b);
@@ -131,6 +144,11 @@ AffectationAST::~AffectationAST()
 {
   delete this->_variableAST;
   delete this->_expr;
+}
+
+void AffectationAST::_defType(){
+  this->_expr->defineType();
+  this->_variableAST->setType(this->_expr->getType());
 }
 
 Value* AffectationAST::Codegen(Builder& b)
@@ -166,6 +184,15 @@ IfAST::~IfAST()
   delete this->_condAST;
   delete this->_thenAST;
   if (this->_elseAST) delete this->_elseAST;
+}
+
+void IfAST::_defType(){
+  this->_condAST->defineType();
+  if(_condAST->getType() != VarType::BOOLEAN){
+    Logger::error << "AST error: the condition of 'if' must be a boolean, not a " << _condAST->getType() << std::endl;
+  }
+  this->_thenAST->defineType();
+  this->_elseAST->defineType();
 }
 
 Value* IfAST::Codegen(Builder& b)
@@ -272,6 +299,23 @@ ForAST::~ForAST()
   delete this->_loopAST;
 }
 
+
+void ForAST::_defType(){
+  this->_variableAST->setType(VarType::INT);
+  this->_beginAST->defineType();
+  if(_beginAST->getType() != VarType::INT){
+    Logger::error << "AST error: the begin exression of 'for' must be an int, not a " << _beginAST->getType() << std::endl;
+  }
+  this->_endAST->defineType();
+  if(_endAST->getType() != VarType::INT){
+    Logger::error << "AST error: the end exression of 'for' must be an int, not a " << _endAST->getType() << std::endl;
+  }
+  this->_incrementAST->defineType();
+  if(_incrementAST->getType() != VarType::INT){
+    Logger::error << "AST error: the increment exression of 'for' must be an int, not a " << _incrementAST->getType() << std::endl;
+  }
+}
+
 Value* ForAST::Codegen(Builder& b)
 {
   return nullptr;
@@ -307,6 +351,14 @@ WhileAST::~WhileAST()
   delete this->_loopAST;
 }
 
+void WhileAST::_defType(){
+  this->_condAST->defineType();
+  if(_condAST->getType() != VarType::BOOLEAN){
+    Logger::error << "AST error: the condition of 'while' must be a boolean, not a " << _condAST->getType() << std::endl;
+  }
+  this->_loopAST->defineType();
+}
+
 Value* WhileAST::Codegen(Builder& b)
 {
   return nullptr;
@@ -336,6 +388,15 @@ RepeatAST::~RepeatAST()
   delete this->_loopAST;
 }
 
+
+void RepeatAST::_defType(){
+  this->_loopAST->defineType();
+  this->_condAST->defineType();
+  if(_condAST->getType() != VarType::BOOLEAN){
+    Logger::error << "AST error: the condition of 'while' must be a boolean, not a " << _condAST->getType() << std::endl;
+  }
+}
+
 Value* RepeatAST::Codegen(Builder& b)
 {
   return nullptr;
@@ -357,14 +418,26 @@ string RepeatAST::_toString(const string& firstPrefix, const string& prefix) con
  */
 ExprAST::~ExprAST() = default;
 
+VarType ExprAST::getType() const{
+  return this->_vtype;
+}
+
+void ExprAST::setType(VarType vtype){
+  this->_vtype = vtype;
+}
+
 
 /**
  * LiteralAST
  */
-LiteralAST::LiteralAST(const std::string& val)
+LiteralAST::LiteralAST(const std::string& val, VarType vtype)
   : _val(val)
-{}
+{
+  this->_vtype = vtype;
+}
 LiteralAST::~LiteralAST() = default;
+
+void LiteralAST::_defType(){}
 
 string LiteralAST::_toString(const string& firstPrefix, const string& prefix) const
 {
@@ -382,6 +455,10 @@ Value* LiteralAST::Codegen(Builder& b)
 /**
  * VariableAST
  */
+VariableAST::VariableAST(){
+  this->_vtype = VarType::NOTDEFINE;
+}
+ 
 VariableAST::~VariableAST() = default;
 
 bool VariableAST::_isVar() const
@@ -389,6 +466,7 @@ bool VariableAST::_isVar() const
   return true;
 }
 
+void VariableAST::_defType(){}
 /*
 Value* VariableAST::Codegen(Builder& b)
 {
@@ -472,6 +550,11 @@ UniOpAST::~UniOpAST()
   delete this->_expr;
 }
 
+void UniOpAST::_defType(){
+  this->_expr->defineType();
+  this->setType(this->_expr->getType());
+}
+
 string UniOpAST::_toString(const string& firstPrefix, const string& prefix) const
 {
   string nextFirstPrefix, nextPrefix;
@@ -505,6 +588,33 @@ BinOpAST::~BinOpAST()
 {
   delete this->_lhs;
   delete this->_rhs;
+}
+
+void BinOpAST::_defType(){
+  VarType opType = VarType::NOTDEFINE;
+  this->_lhs->defineType();
+  this->_rhs->defineType();
+  if(this->_lhs->getType() != VarType::NOTDEFINE){
+    if(this->_rhs->getType()!=VarType::NOTDEFINE && this->_lhs->getType() != this->_rhs->getType() ){
+      Logger::error << "AST error: implicite cast of " << this->_rhs->getType() << " in " << this->_lhs->getType() << std::endl;
+    }
+    opType = this->_lhs->getType();
+  }else{
+    opType = this->_rhs->getType();
+  }   
+
+  if(this->_str != "<" &&
+     this->_str != ">" &&
+     this->_str != "=" &&
+     this->_str != "<=" &&
+     this->_str != ">=" &&
+     this->_str != "&" &&
+     this->_str != "|")
+  {
+    this->setType(opType);
+  }else{
+    this->setType(VarType::BOOLEAN);
+  }
 }
 
 string BinOpAST::_toString(const string& firstPrefix, const string& prefix) const
@@ -566,6 +676,13 @@ CallAST::~CallAST()
   this->_args.clear();
 }
 
+void CallAST::_defType(){ 
+  int length = this->_args.size();
+  for (int i ; i < length ; ++i) {
+    this->_args[i]->defineType();
+  }
+}
+
 string CallAST::_toString(const string& firstPrefix, const string& prefix) const
 {
   string nextFirstPrefix, nextPrefix;
@@ -615,7 +732,7 @@ Value* CallAST::Codegen(Builder& b)
  * DefinitionAST
  */
 
-
+void DefinitionAST::_defType(){}
 
 /**
  * PrototypeAST

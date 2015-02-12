@@ -47,8 +47,8 @@ Token* Parser::eatToken(const TokenType& type) {
 /***
  * Parser Methods
  */
-ExprAST* Parser::literal() {
-  ExprAST* result = new LiteralAST(this->_tok.str());
+ExprAST* Parser::literal(VarType vtype) {
+  ExprAST* result = new LiteralAST(this->_tok.str(),vtype);
   this->eatToken();
   return result;
 }
@@ -321,7 +321,7 @@ StatementAST* Parser::forstatement() {
     incrementAST = this->expression();
     if (!incrementAST) return nullptr;
   }else{
-    incrementAST= new LiteralAST("1");
+    incrementAST= new LiteralAST("1", VarType::INT);
   }
   
   // Consomme la parenthèse fermante
@@ -468,8 +468,9 @@ ExprAST* Parser::primary() {
   case TokenType::ID:
     return this->identifier();
   case TokenType::NUM:
+    return this->literal(VarType::NUMBER);
   case TokenType::STRING:
-    return this->literal();
+    return this->literal(VarType::STRING);
   case TokenType::LEFTP:
     return this->parenthesis();
   default:
