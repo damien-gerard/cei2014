@@ -20,4 +20,5 @@ std::ostream& operator<<(std::ostream& out, VarType vtype){
     out << "boolean";
     break;
   }
+  return out;
 }
