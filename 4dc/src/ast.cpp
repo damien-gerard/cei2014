@@ -69,7 +69,9 @@ BasicBlock* BlocAST::Codegen(Builder& b, Function* f)
 }
 BasicBlock* BlocAST::Codegen(Builder& b, const std::string& name, Function* f)
 {
+  assert(f != nullptr);
   BasicBlock* block = BasicBlock::Create(b.context(), name, f);
+  assert(block != nullptr);
   b.currentBlock() = block;
   b.irbuilder().SetInsertPoint(block);
   for (auto& statement : this->_statements) {
@@ -640,6 +642,7 @@ Value* BinOpAST::Codegen(Builder& b)
   }
   
   auto* BB = b.currentBlock();
+  assert(BB != nullptr);
   // Opérations arithmétiques
   if (this->_str == "+") return b.irbuilder().CreateAdd(L, R, "addtmp", BB);
   if (this->_str == "-") return b.irbuilder().CreateSub(L, R, "subtmp", BB);
@@ -678,7 +681,7 @@ CallAST::~CallAST()
 
 void CallAST::_defType(){ 
   int length = this->_args.size();
-  for (int i ; i < length ; ++i) {
+  for (int i = 0; i < length ; ++i) {
     this->_args[i]->defineType();
   }
 }
@@ -691,7 +694,7 @@ string CallAST::_toString(const string& firstPrefix, const string& prefix) const
   stringstream ss;
   ss << firstPrefix << "Expression::Call " << this->_name << endl;
   int length = this->_args.size();
-  for (int i ; i < length ; ++i) {
+  for (int i = 0; i < length ; ++i) {
     if (i + 1 == length) {
       nextPrefix = prefix + PREFIX_END;
     }
@@ -763,6 +766,7 @@ Function* PrototypeAST::Codegen(Builder& b)
                                        Doubles, false);
 
   Function *F = Function::Create(FT, Function::ExternalLinkage, this->_name, &b.module());
+  assert(F != nullptr);
 
 
   // If F conflicted, there was already something named 'Name'.  If it has a
@@ -830,8 +834,9 @@ Function* FunctionAST::Codegen(Builder& b)
   }
   
   BasicBlock *block = this->_body->Codegen(b, f);
+  assert(block != nullptr);
   if (block) {
-    cout << "pouet" << block->size() << endl;
+    cout << "pouet, block size: " << block->size() << endl;
     b.irbuilder().SetInsertPoint(block);
     // Finish off the function.
     b.irbuilder().CreateRet(block->getTerminator());
@@ -843,7 +848,7 @@ Function* FunctionAST::Codegen(Builder& b)
 
     return f;
   }
-  
+
   return nullptr;
 /*
   // Create a new basic block to start insertion into.
