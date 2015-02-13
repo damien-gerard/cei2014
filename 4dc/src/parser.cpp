@@ -261,7 +261,7 @@ StatementAST* Parser::ifstatement() {
 ///// FOR /////
 
 StatementAST* Parser::forstatement() {
-  VariableAST * variableAST;
+  VariableAST * variableAST = nullptr;
   ExprAST *beginAST;
   ExprAST *endAST;
   ExprAST *incrementAST;
