@@ -5,6 +5,7 @@
 #include "include/parser.h"
 #include "include/ast.h"
 #include "include/builder.h"
+#include "include/builtins.h"
 #include "include/util/logger.h"
 #include <fstream>
 

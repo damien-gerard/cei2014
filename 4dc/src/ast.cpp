@@ -4,6 +4,7 @@
 #include "../include/util/logger.h"
 #include "../include/util/util.h"
 #include "../include/builder.h"
+#include "../include/builtins.h"
 
 using namespace std;
 using namespace llvm;
@@ -643,7 +644,7 @@ Value* BinOpAST::Codegen(Builder& b)
   
   auto* BB = b.currentBlock();
   assert(BB != nullptr);
-  // Opérations arithmétiques
+  // OpÃ©rations arithmÃ©tiques
   if (this->_str == "+") return b.irbuilder().CreateAdd(L, R, "addtmp", BB);
   if (this->_str == "-") return b.irbuilder().CreateSub(L, R, "subtmp", BB);
   if (this->_str == "*") return b.irbuilder().CreateMul(L, R, "multmp", BB);
@@ -655,7 +656,7 @@ Value* BinOpAST::Codegen(Builder& b)
   if (this->_str == ">")  return b.irbuilder().CreateICmpSGT(L, R, "gttmp");
   if (this->_str == ">=") return b.irbuilder().CreateICmpSGE(L, R, "getmp");
   
-  // Opérateurs logiques
+  // OpÃ©rateurs logiques
   if (this->_str == "&&")  return b.irbuilder().CreateAnd(L, R, "ortmp");
   if (this->_str == "||") return b.irbuilder().CreateOr(L, R, "andtmp");
   if (this->_str == "^")  return b.irbuilder().CreateXor(L, R, "xortmp");
@@ -705,8 +706,13 @@ string CallAST::_toString(const string& firstPrefix, const string& prefix) const
 
 Value* CallAST::Codegen(Builder& b)
 {
+  string& name = this->_name;
+  
+  if (Builtin::getList().count(name)) {
+    name = Builtin::getList()[name]->getName();
+  }
   // Look up the name in the global module table.
-  Function *CalleeF = b.module().getFunction(this->_name);
+  Function *CalleeF = b.module().getFunction(name);
   if (CalleeF == 0) {
     return AST::Error<Value>("Unknown function referenced");
   }
@@ -740,6 +746,9 @@ void DefinitionAST::_defType(){}
 /**
  * PrototypeAST
  */
+PrototypeAST::PrototypeAST(const Builtin& builtin)
+  : PrototypeAST(builtin.getName(), builtin.getArgsName())
+{}
 PrototypeAST::PrototypeAST(const std::string& name, const std::vector<std::string>& args)
   : _name(name), _args(args)
 {}
@@ -759,22 +768,27 @@ string PrototypeAST::_toString(const string& firstPrefix, const string& prefix) 
 
 Function* PrototypeAST::Codegen(Builder& b)
 {
+  string name = this->_name;
+  Type* retType = Type::getInt32Ty(b.context());
+  if (Builtin::getList().count(name)) {
+    name = Builtin::getList()[name]->getName();
+  }
   // Make the function type:  double(double,double) etc.
-  std::vector<Type*> Doubles(this->_args.size(),
-                             Type::getDoubleTy(b.context()));
-  FunctionType *FT = FunctionType::get(Type::getDoubleTy(b.context()),
-                                       Doubles, false);
+  std::vector<Type*> Args(this->_args.size(),
+                             Type::getInt32Ty(b.context()));
+  FunctionType *FT = FunctionType::get(retType,
+                                       Args, false);
 
-  Function *F = Function::Create(FT, Function::ExternalLinkage, this->_name, &b.module());
+  Function *F = Function::Create(FT, Function::ExternalLinkage, name, &b.module());
   assert(F != nullptr);
 
 
   // If F conflicted, there was already something named 'Name'.  If it has a
   // body, don't allow redefinition or reextern.
-  if (F->getName() != this->_name) {
+  if (F->getName() != name) {
     // Delete the one we just made and get the existing one.
     F->eraseFromParent();
-    F = b.module().getFunction(this->_name);
+    F = b.module().getFunction(name);
 
     // If F already has a body, reject this.
     if (!F->empty()) {
@@ -796,6 +810,7 @@ Function* PrototypeAST::Codegen(Builder& b)
     // Add arguments to variable symbol table.
     b.localVars()[*argsi] = fargsi;
   }
+  F->setCallingConv(llvm::CallingConv::C);
   return F;
 }
 
@@ -836,13 +851,16 @@ Function* FunctionAST::Codegen(Builder& b)
   BasicBlock *block = this->_body->Codegen(b, f);
   assert(block != nullptr);
   if (block) {
-    cout << "pouet, block size: " << block->size() << endl;
+    Logger::debug << "block size: " << block->size() << endl;
     b.irbuilder().SetInsertPoint(block);
     // Finish off the function.
-    b.irbuilder().CreateRet(block->getTerminator());
-
+    Logger::debug << "block size: " << block->size() << endl;
+    b.irbuilder().CreateRet(ConstantInt::get(Type::getInt32Ty(b.context()), 0));
+    
+    Logger::debug << "Function compiled. Checking..." << endl;
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
+    Logger::debug << "Function checked." << endl;
 
     //b.optimize(f);
 

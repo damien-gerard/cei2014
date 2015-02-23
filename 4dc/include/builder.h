@@ -41,6 +41,7 @@ class Builder
     inline std::map<std::string, llvm::Value*>& globalVars()     {return this->_globalVars;    }
     inline std::map<std::string, llvm::Value*>& persistentVars() {return this->_persistentVars;}
     void optimize(llvm::Function*);
+    void declareBuiltins();
   private:
     llvm::Module* _mod; // delete at destruction
     llvm::IRBuilder<> _irb;

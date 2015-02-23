@@ -286,6 +286,7 @@ class BinOpAST : public ExprAST
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
+
 class CallAST : public ExprAST
 {
   public:
@@ -315,9 +316,11 @@ class DefinitionAST : public AST
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
 
+class Builtin;
 class PrototypeAST : public DefinitionAST
 {
   public:
+    PrototypeAST(const Builtin&);
     PrototypeAST(const std::string&, const std::vector<std::string>&);
     virtual ~PrototypeAST();
     virtual llvm::Function* Codegen(Builder&);

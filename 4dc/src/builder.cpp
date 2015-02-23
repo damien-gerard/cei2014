@@ -1,6 +1,7 @@
 #include "../include/builder.h"
 #include "../include/parser.h"
 #include "../include/util/logger.h"
+#include "../include/builtins.h"
 
 using namespace llvm;
 
@@ -78,7 +79,7 @@ void Builder::build(AST* ast)
 
   } while (ast);
   */
-  
+  declareBuiltins();
   PrototypeAST* proto = new PrototypeAST("", std::vector<std::string>());
   def = new FunctionAST(proto, dynamic_cast<BlocAST*>(ast));
   if (def) {
@@ -89,9 +90,16 @@ void Builder::build(AST* ast)
     } else {
       std::cerr << "empty" << std::endl;
     }
+    if (F && this->_jit) {
+      std::cerr << "Execution:" << std::endl;
+      void* fptr = this->_jit->getPointerToFunction(F);
+
+      // cast to native function
+      int (*f)() = (int (*)())(intptr_t)fptr;
+      std::cerr << "Result: " << f() << std::endl;
+    }
   }
   
-  //dynamic_cast<BlocAST*>(ast)->Codegen(*this);
   this->_mod->dump();
 }
 
@@ -142,5 +150,19 @@ void Builder::optimize(Function* f)
 {
   if (this->_optimizer) {
     this->_optimizer->run(*f);
+  }
+}
+
+void Builder::declareBuiltins()
+{
+  PrototypeAST* proto;
+  Function* F;
+  Builtin* builtin;
+  for (auto& pBuiltin : Builtin::getList()) {
+    builtin = &*pBuiltin.second;
+    proto = new PrototypeAST(*builtin);
+    F = proto->Codegen(*this);
+    assert(F != nullptr);
+    _jit->addGlobalMapping(F, builtin->getPtr());
   }
 }

@@ -33,6 +33,7 @@
 		<Unit filename="Makefile" />
 		<Unit filename="include/ast.h" />
 		<Unit filename="include/builder.h" />
+		<Unit filename="include/builtins.h" />
 		<Unit filename="include/lexer.h" />
 		<Unit filename="include/llvm-dependencies.h" />
 		<Unit filename="include/parser.h" />
@@ -43,6 +44,7 @@
 		<Unit filename="main.cpp" />
 		<Unit filename="src/ast.cpp" />
 		<Unit filename="src/builder.cpp" />
+		<Unit filename="src/builtins.cpp" />
 		<Unit filename="src/lexer.cpp" />
 		<Unit filename="src/parser.cpp" />
 		<Unit filename="src/token.cpp" />
