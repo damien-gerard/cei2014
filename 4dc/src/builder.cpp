@@ -33,52 +33,8 @@ void Builder::build(AST* ast)
 {
   Function* F;
   DefinitionAST* def = nullptr;
-  BasicBlock* bloc = nullptr;
-  /*
-  do {
-    ast = this->_parser.parseLine();
-    def = nullptr;
-    expr = nullptr;
-    if (!ast) {
-      std::cerr << "Build Finished" << std::endl;
-    } else if (typeid(*ast) == typeid(PrototypeAST)) {
-      std::cerr << "Read extern:" << std::endl;
-      def = static_cast<DefinitionAST*>(ast);
-    } else if (typeid(*ast) == typeid(FunctionAST)) {
-      std::cerr << "Read Function definition:" << std::endl;
-      def = static_cast<DefinitionAST*>(ast);
-    } else if (typeid(*ast) == typeid(DefinitionAST)) {
-      std::cerr << "Definition error" << std::endl;
-    } else {
-      std::cerr << "Read expression:" << std::endl;
-      expr = static_cast<ExprAST*>(ast);
-    }
-
-    if (expr) {
-      PrototypeAST* proto = new PrototypeAST("", std::vector<std::string>());
-      def = new FunctionAST(proto, expr);
-    }
-    if (def) {
-      std::cerr << "Dump: ";
-      F = def->Codegen(*this);
-      if (F) {
-        F->dump();
-      } else {
-        std::cerr << "empty" << std::endl;
-      }
-    }
-
-    if (expr && this->_jit) {
-      std::cerr << "Execution:" << std::endl;
-      void* fptr = this->_jit->getPointerToFunction(F);
-
-      // cast to native function
-      double (*f)() = (double (*)())(intptr_t)fptr;
-      std::cerr << "Result: " << f() << std::endl;
-    }
-
-  } while (ast);
-  */
+  //BasicBlock* bloc = nullptr;
+  
   declareBuiltins();
   PrototypeAST* proto = new PrototypeAST("", std::vector<std::string>());
   def = new FunctionAST(proto, dynamic_cast<BlocAST*>(ast));
@@ -160,9 +116,12 @@ void Builder::declareBuiltins()
   Builtin* builtin;
   for (auto& pBuiltin : Builtin::getList()) {
     builtin = &*pBuiltin.second;
+    assert(builtin != nullptr);
     proto = new PrototypeAST(*builtin);
     F = proto->Codegen(*this);
     assert(F != nullptr);
-    _jit->addGlobalMapping(F, builtin->getPtr());
+    if (_jit) {
+      _jit->addGlobalMapping(F, builtin->getPtr());
+    }
   }
 }

@@ -19,6 +19,8 @@ namespace Util {
   std::string join(const std::vector<T>&, const std::string&);
   template<class T>
   std::ostream& join(std::ostream&, const std::vector<T>&, const std::string&);
+  template<class T> bool strConvert(const std::string& s);
+  template<class T> bool strConvert(const std::string& s, T& r);
 }
 
 
@@ -42,6 +44,22 @@ std::ostream& Util::join(std::ostream& out, const std::vector<T>& vec, const std
     out << printable;
   }
   return out;
+}
+
+template<class T> bool strConvert(const std::string& s)
+{
+  T tmp;
+  return strConvert(s, tmp);
+}
+template<class T> bool strConvert(const std::string& s, T& r)
+{
+  std::istringstream iss( s ); 
+  T tmp;
+  if (( iss >> tmp ) && ( iss.eof() )) {
+    r = tmp;
+    return true;
+  }
+  return false;
 }
 
 #endif // UTIL_H

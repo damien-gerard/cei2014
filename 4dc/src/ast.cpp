@@ -57,10 +57,15 @@ BlocAST::~BlocAST()
   }
 }
 
-void BlocAST::_defType(){
-  int length = this->_statements.size();
-  for (int i = 0 ; i < length ; ++i) {
-    this->_statements[i]->defineType();
+void BlocAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
+  for (auto& statement : this->_statements) {
+    statement->taggingPass(argVars, localVars, globaleVars, persistentVars);
   }
 }
 
@@ -116,8 +121,14 @@ StatementExprAST::~StatementExprAST()
   delete this->_expr;
 }
 
-void StatementExprAST::_defType(){
-  this->_expr->defineType();
+void StatementExprAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
+  this->_expr->taggingPass(argVars, localVars, globaleVars, persistentVars);
 }
 
 Value* StatementExprAST::Codegen(Builder& b)
@@ -149,8 +160,15 @@ AffectationAST::~AffectationAST()
   delete this->_expr;
 }
 
-void AffectationAST::_defType(){
-  this->_expr->defineType();
+void AffectationAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
+  this->_variableAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
+  this->_expr->taggingPass(argVars, localVars, globaleVars, persistentVars);
   this->_variableAST->setType(this->_expr->getType());
 }
 
@@ -189,13 +207,21 @@ IfAST::~IfAST()
   if (this->_elseAST) delete this->_elseAST;
 }
 
-void IfAST::_defType(){
-  this->_condAST->defineType();
+void IfAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
+  this->_condAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   if(_condAST->getType() != VarType::BOOLEAN){
     Logger::error << "AST error: the condition of 'if' must be a boolean, not a " << _condAST->getType() << std::endl;
   }
-  this->_thenAST->defineType();
-  this->_elseAST->defineType();
+  this->_thenAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
+  if (this->_elseAST) {
+    this->_elseAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
+  }
 }
 
 Value* IfAST::Codegen(Builder& b)
@@ -303,17 +329,24 @@ ForAST::~ForAST()
 }
 
 
-void ForAST::_defType(){
+void ForAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
+  this->_variableAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   this->_variableAST->setType(VarType::INT);
-  this->_beginAST->defineType();
+  this->_beginAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   if(_beginAST->getType() != VarType::INT){
     Logger::error << "AST error: the begin exression of 'for' must be an int, not a " << _beginAST->getType() << std::endl;
   }
-  this->_endAST->defineType();
+  this->_endAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   if(_endAST->getType() != VarType::INT){
     Logger::error << "AST error: the end exression of 'for' must be an int, not a " << _endAST->getType() << std::endl;
   }
-  this->_incrementAST->defineType();
+  this->_incrementAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   if(_incrementAST->getType() != VarType::INT){
     Logger::error << "AST error: the increment exression of 'for' must be an int, not a " << _incrementAST->getType() << std::endl;
   }
@@ -354,12 +387,18 @@ WhileAST::~WhileAST()
   delete this->_loopAST;
 }
 
-void WhileAST::_defType(){
-  this->_condAST->defineType();
+void WhileAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
+  this->_condAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   if(_condAST->getType() != VarType::BOOLEAN){
     Logger::error << "AST error: the condition of 'while' must be a boolean, not a " << _condAST->getType() << std::endl;
   }
-  this->_loopAST->defineType();
+  this->_loopAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
 }
 
 Value* WhileAST::Codegen(Builder& b)
@@ -391,10 +430,15 @@ RepeatAST::~RepeatAST()
   delete this->_loopAST;
 }
 
-
-void RepeatAST::_defType(){
-  this->_loopAST->defineType();
-  this->_condAST->defineType();
+void RepeatAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
+  this->_loopAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
+  this->_condAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   if(_condAST->getType() != VarType::BOOLEAN){
     Logger::error << "AST error: the condition of 'while' must be a boolean, not a " << _condAST->getType() << std::endl;
   }
@@ -440,7 +484,13 @@ LiteralAST::LiteralAST(const std::string& val, VarType vtype)
 }
 LiteralAST::~LiteralAST() = default;
 
-void LiteralAST::_defType(){}
+void LiteralAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{}
 
 string LiteralAST::_toString(const string& firstPrefix, const string& prefix) const
 {
@@ -469,7 +519,6 @@ bool VariableAST::_isVar() const
   return true;
 }
 
-void VariableAST::_defType(){}
 /*
 Value* VariableAST::Codegen(Builder& b)
 {
@@ -484,6 +533,21 @@ LocalVariableAST::LocalVariableAST(const std::string& name)
   : _name(name)
 {}
 LocalVariableAST::~LocalVariableAST() = default;
+
+void LocalVariableAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
+  int num = 0;
+  if (strConvert(this->_name, num) && num >= 0) {
+    argVars[num] = this->getType();
+  } else {
+    localVars[this->_name] = this->getType();
+  }
+}
 
 string LocalVariableAST::_toString(const string& firstPrefix, const string& prefix) const
 {
@@ -506,6 +570,16 @@ GlobaleVariableAST::GlobaleVariableAST(const std::string& name)
 {}
 GlobaleVariableAST::~GlobaleVariableAST() = default;
 
+void GlobaleVariableAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
+  globaleVars[this->_name] = this->getType();
+}
+
 string GlobaleVariableAST::_toString(const string& firstPrefix, const string& prefix) const
 {
   stringstream ss;
@@ -527,6 +601,16 @@ PersistentVariableAST::PersistentVariableAST(const std::string& name)
   : _name(name)
 {}
 PersistentVariableAST::~PersistentVariableAST() = default;
+
+void PersistentVariableAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
+  persistentVars[this->_name] = this->getType();
+}
 
 string PersistentVariableAST::_toString(const string& firstPrefix, const string& prefix) const
 {
@@ -553,8 +637,14 @@ UniOpAST::~UniOpAST()
   delete this->_expr;
 }
 
-void UniOpAST::_defType(){
-  this->_expr->defineType();
+void UniOpAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
+  this->_expr->taggingPass(argVars, localVars, globaleVars, persistentVars);
   this->setType(this->_expr->getType());
 }
 
@@ -593,10 +683,16 @@ BinOpAST::~BinOpAST()
   delete this->_rhs;
 }
 
-void BinOpAST::_defType(){
+void BinOpAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
   VarType opType = VarType::NOTDEFINE;
-  this->_lhs->defineType();
-  this->_rhs->defineType();
+  this->_lhs->taggingPass(argVars, localVars, globaleVars, persistentVars);
+  this->_rhs->taggingPass(argVars, localVars, globaleVars, persistentVars);
   if(this->_lhs->getType() != VarType::NOTDEFINE){
     if(this->_rhs->getType()!=VarType::NOTDEFINE && this->_lhs->getType() != this->_rhs->getType() ){
       Logger::error << "AST error: implicite cast of " << this->_rhs->getType() << " in " << this->_lhs->getType() << std::endl;
@@ -680,10 +776,15 @@ CallAST::~CallAST()
   this->_args.clear();
 }
 
-void CallAST::_defType(){ 
-  int length = this->_args.size();
-  for (int i = 0; i < length ; ++i) {
-    this->_args[i]->defineType();
+void CallAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{
+  for (auto& arg : this->_args) {
+    arg->taggingPass(argVars, localVars, globaleVars, persistentVars);
   }
 }
 
@@ -741,7 +842,13 @@ Value* CallAST::Codegen(Builder& b)
  * DefinitionAST
  */
 
-void DefinitionAST::_defType(){}
+void DefinitionAST::_taggingPass(
+              std::map<int, VarType>& argVars,
+              std::map<std::string, VarType>& localVars,
+              std::map<std::string, VarType>& globaleVars,
+              std::map<std::string, VarType>& persistentVars
+            )
+{}
 
 /**
  * PrototypeAST
@@ -770,9 +877,7 @@ Function* PrototypeAST::Codegen(Builder& b)
 {
   string name = this->_name;
   Type* retType = Type::getInt32Ty(b.context());
-  if (Builtin::getList().count(name)) {
-    name = Builtin::getList()[name]->getName();
-  }
+  
   // Make the function type:  double(double,double) etc.
   std::vector<Type*> Args(this->_args.size(),
                              Type::getInt32Ty(b.context()));

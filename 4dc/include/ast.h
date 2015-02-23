@@ -17,7 +17,12 @@ class AST
 
     std::string toString(const std::string& firstPrefix, const std::string& prefix) const;
     inline bool isVar() const {return this->_isVar();}
-    inline void defineType() {return this->_defType();}
+    inline void taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                ) {return this->_taggingPass(argVars, localVars, globaleVars, persistentVars);};
 
     template<class T = AST>
     static T* Error(const std::string& msg);
@@ -25,7 +30,12 @@ class AST
   protected:
     virtual bool _isVar() const;
   private:
-    virtual void _defType() = 0;
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                ) = 0;
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
 
@@ -50,7 +60,12 @@ class BlocAST : public AST
   private:
     std::vector<StatementAST*> _statements; // delete at destruction
     
-    virtual void _defType();
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -62,7 +77,6 @@ class StatementAST : public AST
     virtual llvm::Value* Codegen(Builder&) = 0;
   protected:
   private:
-    virtual void _defType()=0;
   
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
@@ -78,7 +92,12 @@ class StatementExprAST : public StatementAST
   private:
     ExprAST* _expr; // delete at destruction
     
-    virtual void _defType();
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -94,7 +113,12 @@ class AffectationAST : public StatementAST
     VariableAST * _variableAST;
     ExprAST* _expr; // delete at destruction
     
-    virtual void _defType();
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -111,7 +135,12 @@ class IfAST : public StatementAST
     ExprAST *_condAST; // delete at destruction
     BlocAST *_thenAST, *_elseAST; // delete at destruction
     
-    virtual void _defType();
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -131,7 +160,12 @@ class ForAST : public StatementAST
     ExprAST *_incrementAST;
     BlocAST *_loopAST;
     
-    virtual void _defType();
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -147,7 +181,12 @@ class WhileAST : public StatementAST
     ExprAST *_condAST;
     BlocAST *_loopAST;
     
-    virtual void _defType();
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -163,7 +202,12 @@ class RepeatAST : public StatementAST
     ExprAST *_condAST;
     BlocAST *_loopAST;
     
-    virtual void _defType();
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -178,7 +222,6 @@ class ExprAST : public AST
   protected:
     VarType _vtype;
   private:
-    virtual void _defType()=0;
     
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
@@ -193,7 +236,12 @@ class LiteralAST : public ExprAST
   private:
     std::string _val;
     
-    virtual void _defType();
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -207,7 +255,6 @@ class VariableAST : public ExprAST
   protected:
     virtual bool _isVar() const;
   private:
-    virtual void _defType();
     
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
@@ -222,6 +269,12 @@ class LocalVariableAST : public VariableAST
   private:
     std::string _name;
     
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -236,6 +289,12 @@ class GlobaleVariableAST : public VariableAST
   private:
     std::string _name;
     
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -250,6 +309,12 @@ class PersistentVariableAST : public VariableAST
   private:
     std::string _name;
 
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
     
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -265,7 +330,12 @@ class UniOpAST : public ExprAST
     std::string _str;
     ExprAST *_expr; // delete at destruction
 
-    virtual void _defType();
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
     
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -281,7 +351,12 @@ class BinOpAST : public ExprAST
     std::string _str;
     ExprAST *_lhs, *_rhs; // delete at destruction
 
-    virtual void _defType();
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
     
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -298,7 +373,12 @@ class CallAST : public ExprAST
     std::string _name;
     std::vector<ExprAST*> _args; // delete at destruction
     
-    virtual void _defType();
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
 
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
@@ -311,7 +391,12 @@ class DefinitionAST : public AST
     virtual llvm::Function* Codegen(Builder&) = 0;
   protected:
   private:
-    virtual void _defType();
+    virtual void _taggingPass(
+                  std::map<int, VarType>& argVars,
+                  std::map<std::string, VarType>& localVars,
+                  std::map<std::string, VarType>& globaleVars,
+                  std::map<std::string, VarType>& persistentVars
+                );
   
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const = 0;
 };
