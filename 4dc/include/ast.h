@@ -252,6 +252,7 @@ class VariableAST : public ExprAST
     VariableAST();
     virtual ~VariableAST();
     virtual llvm::Value* Codegen(Builder&) = 0;
+    virtual llvm::Value* CodegenMute(Builder&, llvm::Value*) = 0;
   protected:
     virtual bool _isVar() const;
   private:
@@ -265,6 +266,7 @@ class LocalVariableAST : public VariableAST
     LocalVariableAST(const std::string &);
     virtual ~LocalVariableAST();
     virtual llvm::Value* Codegen(Builder&);
+    virtual llvm::Value* CodegenMute(Builder&, llvm::Value*);
   protected:
   private:
     std::string _name;
@@ -285,6 +287,7 @@ class GlobaleVariableAST : public VariableAST
     GlobaleVariableAST(const std::string &);
     virtual ~GlobaleVariableAST();
     virtual llvm::Value* Codegen(Builder&);
+    virtual llvm::Value* CodegenMute(Builder&, llvm::Value*);
   protected:
   private:
     std::string _name;
@@ -305,6 +308,7 @@ class PersistentVariableAST : public VariableAST
     PersistentVariableAST(const std::string &);
     virtual ~PersistentVariableAST();
     virtual llvm::Value* Codegen(Builder&);
+    virtual llvm::Value* CodegenMute(Builder&, llvm::Value*);
   protected:
   private:
     std::string _name;
@@ -390,6 +394,14 @@ class DefinitionAST : public AST
     virtual ~DefinitionAST() = default;
     virtual llvm::Function* Codegen(Builder&) = 0;
   protected:
+    static llvm::Function* createFunc(const std::string& name, std::vector<llvm::Type*> argsType, llvm::Type* retType, Builder& b);
+    static void createAllocas(
+                    std::map<std::string, VarType>& types,
+                    std::map<std::string, llvm::AllocaInst*>& vals,
+                    llvm::Function* F,
+                    Builder& b
+    );
+    static llvm::AllocaInst *createEntryBlockAlloca(llvm::Function *F, const std::string& name, llvm::Type* type);
   private:
     virtual void _taggingPass(
                   std::map<int, VarType>& argVars,
@@ -420,12 +432,12 @@ class PrototypeAST : public DefinitionAST
 class FunctionAST : public DefinitionAST
 {
   public:
-    FunctionAST(PrototypeAST*, BlocAST*);
+    FunctionAST(const std::string&, BlocAST*);
     virtual ~FunctionAST();
     virtual llvm::Function* Codegen(Builder&);
   protected:
   private:
-    PrototypeAST* _proto; // keep at destruction
+    std::string _name;
     BlocAST* _body; // delete at destruction
     
 

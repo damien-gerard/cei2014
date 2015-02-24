@@ -21,6 +21,7 @@ namespace Util {
   std::ostream& join(std::ostream&, const std::vector<T>&, const std::string&);
   template<class T> bool strConvert(const std::string& s);
   template<class T> bool strConvert(const std::string& s, T& r);
+  template<class T> std::string toS(T o);
 }
 
 
@@ -46,12 +47,12 @@ std::ostream& Util::join(std::ostream& out, const std::vector<T>& vec, const std
   return out;
 }
 
-template<class T> bool strConvert(const std::string& s)
+template<class T> bool Util::strConvert(const std::string& s)
 {
   T tmp;
   return strConvert(s, tmp);
 }
-template<class T> bool strConvert(const std::string& s, T& r)
+template<class T> bool Util::strConvert(const std::string& s, T& r)
 {
   std::istringstream iss( s ); 
   T tmp;
@@ -60,6 +61,13 @@ template<class T> bool strConvert(const std::string& s, T& r)
     return true;
   }
   return false;
+}
+
+
+template<class T> std::string Util::toS(T o) {
+  std::ostringstream ss;
+  ss << o;
+  return ss.str();
 }
 
 #endif // UTIL_H

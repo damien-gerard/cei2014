@@ -76,14 +76,17 @@ BasicBlock* BlocAST::Codegen(Builder& b, Function* f)
 BasicBlock* BlocAST::Codegen(Builder& b, const std::string& name, Function* f)
 {
   assert(f != nullptr);
-  BasicBlock* block = BasicBlock::Create(b.context(), name, f);
+  BasicBlock* block = b.currentBlock();
+  if (block == nullptr) {
+    block = BasicBlock::Create(b.context(), name, f);
+    b.currentBlock() = block;
+  }
   assert(block != nullptr);
-  b.currentBlock() = block;
   b.irbuilder().SetInsertPoint(block);
   for (auto& statement : this->_statements) {
     statement->Codegen(b);
   }
-  //block = b.irbuilder().GetInsertBlock();
+  block = b.irbuilder().GetInsertBlock();
   return block;
 }
 
@@ -174,7 +177,9 @@ void AffectationAST::_taggingPass(
 
 Value* AffectationAST::Codegen(Builder& b)
 {
-  return nullptr;
+  assert(this->_variableAST != nullptr);
+  assert(this->_expr != nullptr);
+  return this->_variableAST->CodegenMute(b, this->_expr->Codegen(b));
 }
 
 string AffectationAST::_toString(const string& firstPrefix, const string& prefix) const
@@ -542,11 +547,10 @@ void LocalVariableAST::_taggingPass(
             )
 {
   int num = 0;
-  if (strConvert(this->_name, num) && num >= 0) {
+  if (Util::strConvert(this->_name, num) && num >= 0) {
     argVars[num] = this->getType();
-  } else {
-    localVars[this->_name] = this->getType();
   }
+  localVars[this->_name] = this->getType();
 }
 
 string LocalVariableAST::_toString(const string& firstPrefix, const string& prefix) const
@@ -558,7 +562,14 @@ string LocalVariableAST::_toString(const string& firstPrefix, const string& pref
 
 Value* LocalVariableAST::Codegen(Builder& b)
 {
-  Value* V = b.localVars()[this->_name];
+  AllocaInst* Alloca = b.localVars()[this->_name];
+  Value* V = b.irbuilder().CreateLoad(Alloca);
+  return V ? V : AST::Error<Value>("Unknown local variable name");
+}
+Value* LocalVariableAST::CodegenMute(Builder& b, llvm::Value* Val)
+{
+  AllocaInst* Alloca = b.localVars()[this->_name];
+  Value* V = b.irbuilder().CreateStore(Val, Alloca);
   return V ? V : AST::Error<Value>("Unknown local variable name");
 }
 
@@ -589,8 +600,15 @@ string GlobaleVariableAST::_toString(const string& firstPrefix, const string& pr
 
 Value* GlobaleVariableAST::Codegen(Builder& b)
 {
-  Value* V = b.globalVars()[this->_name];
+  AllocaInst* Alloca = b.globalVars()[this->_name];
+  Value* V = b.irbuilder().CreateLoad(Alloca);
   return V ? V : AST::Error<Value>("Unknown global variable name");
+}
+Value* GlobaleVariableAST::CodegenMute(Builder& b, llvm::Value* Val)
+{
+  AllocaInst* Alloca = b.globalVars()[this->_name];
+  Value* V = b.irbuilder().CreateStore(Val, Alloca);
+  return V ? V : AST::Error<Value>("Unknown local variable name");
 }
 
 
@@ -621,8 +639,15 @@ string PersistentVariableAST::_toString(const string& firstPrefix, const string&
 
 Value* PersistentVariableAST::Codegen(Builder& b)
 {
-  Value* V = b.persistentVars()[this->_name];
+  AllocaInst* Alloca = b.persistentVars()[this->_name];
+  Value* V = b.irbuilder().CreateLoad(Alloca);
   return V ? V : AST::Error<Value>("Unknown persistent variable name");
+}
+Value* PersistentVariableAST::CodegenMute(Builder& b, llvm::Value* Val)
+{
+  AllocaInst* Alloca = b.persistentVars()[this->_name];
+  Value* V = b.irbuilder().CreateStore(Val, Alloca);
+  return V ? V : AST::Error<Value>("Unknown local variable name");
 }
 
 
@@ -842,6 +867,58 @@ Value* CallAST::Codegen(Builder& b)
  * DefinitionAST
  */
 
+Function* DefinitionAST::createFunc(const std::string& name, std::vector<Type*> argsType, Type* retType, Builder& b)
+{
+  FunctionType *FT = FunctionType::get(retType, argsType, false);
+
+  Function *F = Function::Create(FT, Function::ExternalLinkage, name, &b.module());
+  assert(F != nullptr);
+
+
+  // If F conflicted, there was already something named 'Name'.  If it has a
+  // body, don't allow redefinition or reextern.
+  if (F->getName() != name) {
+    // Delete the one we just made and get the existing one.
+    F->eraseFromParent();
+    F = b.module().getFunction(name);
+
+    // If F already has a body, reject this.
+    if (!F->empty()) {
+      return AST::Error<Function>("redefinition of function");
+    }
+
+    // If F took a different number of args, reject.
+    if (F->arg_size() != argsType.size()) {
+      return AST::Error<Function>("redefinition of function with different # args");
+    }
+  }
+  return F;
+}
+AllocaInst* DefinitionAST::createEntryBlockAlloca(Function *F, const string& name, Type* type)
+{
+  IRBuilder<> TmpB(&F->getEntryBlock(),
+                 F->getEntryBlock().begin());
+  return TmpB.CreateAlloca(type, 0, name.c_str());
+}
+void DefinitionAST::createAllocas(
+          map<string, VarType>& types,
+          map<string, AllocaInst*>& vals,
+          Function* F,
+          Builder& b
+)
+{
+  AllocaInst *Alloca ;
+  string varName;
+  Type* varType = Type::getInt32Ty(b.context());
+  for (auto& varPair : types) {
+    varName = varPair.first;
+    //varType = varPair.second.getType();
+    if (vals.count(varName) == 0) {
+      Alloca = createEntryBlockAlloca(F, varName, varType);
+      vals[varName] = Alloca;
+    }
+  }
+}
 void DefinitionAST::_taggingPass(
               std::map<int, VarType>& argVars,
               std::map<std::string, VarType>& localVars,
@@ -881,31 +958,11 @@ Function* PrototypeAST::Codegen(Builder& b)
   // Make the function type:  double(double,double) etc.
   std::vector<Type*> Args(this->_args.size(),
                              Type::getInt32Ty(b.context()));
-  FunctionType *FT = FunctionType::get(retType,
-                                       Args, false);
-
-  Function *F = Function::Create(FT, Function::ExternalLinkage, name, &b.module());
+  Function *F = DefinitionAST::createFunc(name, Args, retType, b);
+  
   assert(F != nullptr);
-
-
-  // If F conflicted, there was already something named 'Name'.  If it has a
-  // body, don't allow redefinition or reextern.
-  if (F->getName() != name) {
-    // Delete the one we just made and get the existing one.
-    F->eraseFromParent();
-    F = b.module().getFunction(name);
-
-    // If F already has a body, reject this.
-    if (!F->empty()) {
-      return AST::Error<Function>("redefinition of function");
-    }
-
-    // If F took a different number of args, reject.
-    if (F->arg_size() != this->_args.size()) {
-      return AST::Error<Function>("redefinition of function with different # args");
-    }
-  }
   // Set names for all arguments.
+  /*
   auto argsi  = this->_args.begin();
   auto endi   = this->_args.end();
   auto fargsi = F->arg_begin();
@@ -916,6 +973,7 @@ Function* PrototypeAST::Codegen(Builder& b)
     b.localVars()[*argsi] = fargsi;
   }
   F->setCallingConv(llvm::CallingConv::C);
+  */
   return F;
 }
 
@@ -923,8 +981,8 @@ Function* PrototypeAST::Codegen(Builder& b)
 /**
  * FunctionAST
  */
-FunctionAST::FunctionAST(PrototypeAST* proto, BlocAST* body)
-  : _proto(proto), _body(body)
+FunctionAST::FunctionAST(const std::string& name, BlocAST* body)
+  : _name(name), _body(body)
 {}
 FunctionAST::~FunctionAST()
 {
@@ -937,8 +995,7 @@ string FunctionAST::_toString(const string& firstPrefix, const string& prefix) c
   nextFirstPrefix = prefix + PREFIX_BEGIN;
   nextPrefix = prefix + PREFIX_MIDDLE;
   stringstream ss;
-  ss  << firstPrefix << "Definition::Function " << endl
-      << this->_proto->toString(nextFirstPrefix, nextPrefix);
+  ss  << firstPrefix << "Definition::Function " << this->_name;
   nextPrefix = prefix + PREFIX_END;
   ss  << this->_body->toString(nextFirstPrefix, nextPrefix);
   return ss.str();
@@ -946,31 +1003,100 @@ string FunctionAST::_toString(const string& firstPrefix, const string& prefix) c
 
 Function* FunctionAST::Codegen(Builder& b)
 {
-  b.localVars().clear();
-
-  Function *f = this->_proto->Codegen(b);
-  if (!f) {
-    return nullptr;
-  }
+  string name = this->_name;
+  map<int, VarType> argVars;
+  map<string, VarType> localVars, globaleVars, persistentVars;
   
-  BasicBlock *block = this->_body->Codegen(b, f);
+  Logger::debug << "Creating function" << endl << "Tagging the AST... ";
+  this->_body->taggingPass(argVars, localVars, globaleVars, persistentVars);
+  Logger::debug << "done." << endl;
+  
+  Logger::debug << "creating signature... ";
+  Value* retVal = ConstantInt::get(Type::getInt32Ty(b.context()), 0);
+  int nbArgs = 0;
+  for (auto& pairVar : argVars) {
+    int num = pairVar.first;
+    if (nbArgs < num) {
+      nbArgs = num;
+    }
+  }
+  Type* retType = Type::getInt32Ty(b.context());
+  
+  
+  // Make the function type:  double(double,double) etc.
+  std::vector<Type*> Args(nbArgs, Type::getInt32Ty(b.context()));
+  // for (auto& pairVar : argVars) {
+  //   int num = pairVar.first;
+  //   Type* type = pairVar.second.getType();
+  //   if (num == 0) {
+  //     retType = type;
+  //   } else {
+  //     Args[num] = type;
+  //   }
+  // }
+  Function *F = DefinitionAST::createFunc(name, Args, retType, b);
+  // Create a new basic block to start insertion into.
+  BasicBlock *block = BasicBlock::Create(b.context(), "entry", F);
+  b.irbuilder().SetInsertPoint(block);
+  b.currentBlock() = block;
+  
+  Logger::debug << "done." << endl;
+  
+  assert(F != nullptr);
+  assert(block != nullptr);
+  int i = 1;
+  AllocaInst *Alloca;
+  
+  b.localVars().clear();
+  Logger::debug << "creating allocas... ";
+  DefinitionAST::createAllocas(localVars, b.localVars(), F, b);
+  DefinitionAST::createAllocas(globaleVars, b.globalVars(), F, b);
+  DefinitionAST::createAllocas(persistentVars, b.persistentVars(), F, b);
+  Logger::debug << "done." << endl;
+  Logger::debug << "creating arguments... ";
+  
+  // Charge les arguments en mémoires
+  for (auto& arg : F->args()) {
+    if (argVars.count(i)) {
+      string s = Util::toS(i);
+      Alloca = b.localVars()[s];
+      assert(Alloca != nullptr);
+      b.irbuilder().CreateStore(&arg, Alloca);
+    }
+    ++i;
+  }
+  Logger::debug << "done." << endl;
+  Logger::debug << "creating body... ";
+
+  
+  //BasicBlock *block = this->_body->Codegen(b, F);
+  block = this->_body->Codegen(b, F);
+  Logger::debug << "done." << endl;
   assert(block != nullptr);
   if (block) {
-    Logger::debug << "block size: " << block->size() << endl;
+    Logger::debug << "finalizing... ";
     b.irbuilder().SetInsertPoint(block);
     // Finish off the function.
-    Logger::debug << "block size: " << block->size() << endl;
-    b.irbuilder().CreateRet(ConstantInt::get(Type::getInt32Ty(b.context()), 0));
+    if (argVars.count(0)) {
+      Alloca = b.localVars()["0"];
+      retVal = b.irbuilder().CreateLoad(Alloca);
+    }
+    b.irbuilder().CreateRet(retVal);
+    Logger::debug << "done." << endl;
     
-    Logger::debug << "Function compiled. Checking..." << endl;
+    Logger::debug << "Checking... ";
     // Validate the generated code, checking for consistency.
-    verifyFunction(*f);
-    Logger::debug << "Function checked." << endl;
+    verifyFunction(*F);
+    Logger::debug << "done." << endl;
 
-    //b.optimize(f);
+    Logger::debug << "optimizing... ";
+    b.optimize(F);
+    Logger::debug << "done." << endl;
+    Logger::debug << "Function Compiled." << endl;
 
-    return f;
+    return F;
   }
+  Logger::debug << "Empty Block." << endl;
 
   return nullptr;
 /*

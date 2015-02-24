@@ -36,8 +36,7 @@ void Builder::build(AST* ast)
   //BasicBlock* bloc = nullptr;
   
   declareBuiltins();
-  PrototypeAST* proto = new PrototypeAST("", std::vector<std::string>());
-  def = new FunctionAST(proto, dynamic_cast<BlocAST*>(ast));
+  def = new FunctionAST("", dynamic_cast<BlocAST*>(ast));
   if (def) {
     std::cerr << "Dump: ";
     F = def->Codegen(*this);
@@ -88,6 +87,8 @@ FunctionPassManager* Builder::getStandardOptimizer()
   }
   // Provide basic AliasAnalysis support for GVN.
   optimizer->add(createBasicAliasAnalysisPass());
+  // Promote allocas to registers.
+  optimizer->add(createPromoteMemoryToRegisterPass());
   // Do simple "peephole" optimizations and bit-twiddling optzns.
   optimizer->add(createInstructionCombiningPass());
   // Reassociate expressions.

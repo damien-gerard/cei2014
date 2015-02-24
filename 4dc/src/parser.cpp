@@ -86,7 +86,6 @@ VariableAST* Parser::localVariable() {
   if(this->_tok == TokenType::NUM){
     std::string number = this->_tok.str();
     this->eatToken();
-    Logger::warning << "Parse Warning: method parameter $" << number << " non-implemented" << std::endl;
     return new LocalVariableAST(idName);
   }
   if(!this->eatToken(TokenType::ID)) return nullptr;
