@@ -1,0 +1,11 @@
+#Tests valides
++ 4dcTests/testHelloWorld.4d
++ 4dcTests/testAddFunction.4d
++ 4dcTests/testAddFunctionWithTypeDeclaration.4d
++ 4dcTests/testAlert42.4d
++ 4dcTests/testCountDownWithFor.4d
++ 4dcTests/testCountDownWithWhile.4d
++ 4dcTests/testCountDownWithRepeat.4d
+#Tests d'erreur
+- 4dcTests/errorDivideby0.4d
+#

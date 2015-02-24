@@ -1,0 +1,5 @@
+$i = 10
+Repeat
+  $i := $i - 1
+  ALERT(String($i))
+Until(i<0)
