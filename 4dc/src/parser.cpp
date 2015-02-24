@@ -243,15 +243,15 @@ StatementAST* Parser::ifstatement() {
     elseAST = this->bloc();
     if (!elseAST) return nullptr;
   
-  // Consomme le token ENDIF
-    this->eatToken(TokenType::ENDIF);
-  if(this->_tok == TokenType::ENDL) this->eatToken();
-  
-  return new IfAST(ifAST,thenAST, elseAST);
+    // Consomme le token ENDIF
+    if (!this->eatToken(TokenType::ENDIF)) return nullptr;
+    if(this->_tok == TokenType::ENDL) this->eatToken();
+    
+    return new IfAST(ifAST,thenAST, elseAST);
   }
 
   // Consomme le token ENDIF
-  this->eatToken(TokenType::ENDIF);
+  if (!this->eatToken(TokenType::ENDIF)) return nullptr;
   if(this->_tok == TokenType::ENDL) this->eatToken();
     
   return new IfAST(ifAST, thenAST);
