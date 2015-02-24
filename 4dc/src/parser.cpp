@@ -27,7 +27,7 @@ Token* Parser::eatToken() {
     this->_currentLine ++;
   }
   this->_tok = this->_lexer.nextToken();
-  Logger::info << this->_tok << std::endl;
+  //Logger::info << this->_tok << std::endl;
   return &this->_tok;
 }
 
@@ -39,7 +39,7 @@ Token* Parser::eatToken(const TokenType& type) {
     return AST::Error<Token>(ss.str());
   }
   this->_tok = this->_lexer.nextToken();
-  Logger::info << this->_tok << std::endl;
+  //Logger::info << this->_tok << std::endl;
   return &this->_tok;
 }
 

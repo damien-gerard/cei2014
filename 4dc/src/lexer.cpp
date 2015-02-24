@@ -126,6 +126,12 @@ Token Lexer::eatSymbolToken()
   chr0 = this->_chr;
   chr1 = this->eatChr();
 
+  // Diamond
+  if (chr0 == '<' && chr1 == '>') {
+    this->eatChr();
+    return TokenType::DIAMOND;
+  }
+
   // Symboles spéciaux
   switch (chr0) {
   case '(':
@@ -152,12 +158,6 @@ Token Lexer::eatSymbolToken()
     this->eatChr();
   }
   return this->eatOpToken();
-  }
-
-  // Diamond
-  if (chr0 == '<' && chr1 == '>') {
-    this->eatChr();
-    return TokenType::DIAMOND;
   }
 
   // Single Line commenta
