@@ -387,7 +387,7 @@ StatementAST* Parser::repeatstatement() {
   if (!loopAST) return nullptr;
 
   // Consomme le token UNTIL
-  this->eatToken(TokenType::UNTIL);
+  if (this->eatToken(TokenType::UNTIL)) return nullptr;
   
   // Consomme la parenthèse ouvrante
   if (!this->eatToken(TokenType::LEFTP)) return nullptr;

@@ -473,6 +473,37 @@ void RepeatAST::_taggingPass(
 
 Value* RepeatAST::Codegen(Builder& b)
 {
+  IRBuilder<>& builder = b.irbuilder();
+  
+  // Find the function to generate the code in
+  Function *f = builder.GetInsertBlock()->getParent();
+  assert(f != nullptr);
+  
+  // Creates all the blocks
+  BasicBlock *loopBB = BasicBlock::Create(b.context(), "repeat.body", f);
+  BasicBlock *endBB = BasicBlock::Create(b.context(), "repeat.cont");
+  
+  // Generate the link between previous code and the loop
+  builder.CreateBr(loopBB);
+  builder.SetInsertPoint(loopBB);
+  b.currentBlock() = loopBB;
+  
+  // Generate loop body
+  if (!this->_loopAST->Codegen(b)) {
+    return nullptr;
+  }
+  
+  // Generate condition
+  Value *condV = this->_condAST->Codegen(b);
+  if (!condV) {
+    return nullptr;
+  }
+  builder.CreateCondBr(condV, endBB, loopBB);
+  
+  // Emit loop continuation block
+  f->getBasicBlockList().push_back(endBB);
+  builder.SetInsertPoint(endBB);
+  b.currentBlock() = endBB;
   return nullptr;
 }
 
