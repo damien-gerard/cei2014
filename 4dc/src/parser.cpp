@@ -365,7 +365,7 @@ StatementAST* Parser::whilestatement() {
   if (!loopAST) return nullptr;
 
   // Consomme le token ENDWHILE
-  this->eatToken(TokenType::ENDWHILE);
+  if (!this->eatToken(TokenType::ENDWHILE)) return nullptr;
   if(this->_tok == TokenType::ENDL) this->eatToken();
     
   return new WhileAST(whileAST, loopAST);

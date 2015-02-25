@@ -392,6 +392,44 @@ void WhileAST::_taggingPass(
 
 Value* WhileAST::Codegen(Builder& b)
 {
+  IRBuilder<>& builder = b.irbuilder();
+  
+  // Find the function to generate the code in
+  Function *f = builder.GetInsertBlock()->getParent();
+  assert(f != nullptr);
+  
+  // Creates all the blocks
+  BasicBlock *condBB = BasicBlock::Create(b.context(), "while.cond", f);
+  BasicBlock *loopBB = BasicBlock::Create(b.context(), "while.body");
+  BasicBlock *endBB = BasicBlock::Create(b.context(), "while.cont");
+  
+  // Generate the link between previous code and the loop
+  builder.CreateBr(condBB);
+  builder.SetInsertPoint(condBB);
+  b.currentBlock() = condBB;
+  
+  // Generate condition
+  Value *condV = this->_condAST->Codegen(b);
+  if (!condV) {
+    return nullptr;
+  }
+  builder.CreateCondBr(condV, loopBB, endBB);
+
+  // Emit Loop Body block
+  f->getBasicBlockList().push_back(loopBB);
+  builder.SetInsertPoint(loopBB);
+  b.currentBlock() = loopBB;
+  
+  // Generate loop body
+  if (!this->_loopAST->Codegen(b)) {
+    return nullptr;
+  }
+  builder.CreateBr(condBB);
+  
+  // Emit loop continuation block
+  f->getBasicBlockList().push_back(endBB);
+  builder.SetInsertPoint(endBB);
+  b.currentBlock() = endBB;
   return nullptr;
 }
 
@@ -1074,6 +1112,7 @@ Function* FunctionAST::Codegen(Builder& b)
     // Validate the generated code, checking for consistency.
     verifyFunction(*F);
     Logger::debug << "done." << endl;
+    F->dump();
 
     Logger::debug << "optimizing... ";
     b.optimize(F);
