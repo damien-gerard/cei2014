@@ -374,6 +374,8 @@ Value* ForAST::Codegen(Builder& b)
   // Creates all the blocks
   BasicBlock *initBB = BasicBlock::Create(b.context(), "for.init", f);
   BasicBlock *condBB = BasicBlock::Create(b.context(), "for.cond");
+  BasicBlock *condAscBB = BasicBlock::Create(b.context(), "for.condAsc");
+  BasicBlock *condDscBB = BasicBlock::Create(b.context(), "for.condDes");
   BasicBlock *loopBB = BasicBlock::Create(b.context(), "for.body");
   BasicBlock *endBB = BasicBlock::Create(b.context(), "for.cont");
   
@@ -385,25 +387,50 @@ Value* ForAST::Codegen(Builder& b)
   b.currentBlock() = initBB;
 
   //init increment
-  Value *initV = this->_variableAST->CodegenMute(b, this->_beginAST->Codegen(b));
-  
+  Value *beginV = this->_beginAST->Codegen(b);
+  Value *initV = this->_variableAST->CodegenMute(b, beginV);
+
   if (!initV) {
     return nullptr;
   }
 
-  // Generate the link between previous code and the loop
+  // Create the entry cond block
   builder.CreateBr(condBB);
   f->getBasicBlockList().push_back(condBB);
   builder.SetInsertPoint(condBB);
   b.currentBlock() = condBB;
   
-  // Generate condition
-  Value *condV = builder.CreateICmpNE (this->_variableAST->Codegen(b), this->_endAST->Codegen(b), "forcond");
+  // Generate condition ( end > begin ? ascendant : descendant)
+  Value *endV = this->_endAST->Codegen(b);
+  Value *condV = builder.CreateICmpSGT (endV, beginV, "forcond");
   if (!condV) {
     return nullptr;
   }
-  builder.CreateCondBr(condV, loopBB, endBB);
+  builder.CreateCondBr(condV, condAscBB, condDscBB);
   
+  // Generate Cond bloc Ascendant
+  f->getBasicBlockList().push_back(condAscBB);
+  builder.SetInsertPoint(condAscBB);
+  b.currentBlock() = condAscBB;
+  
+  // Generate condition ( $var <= end ? loop : endbb)
+  Value *condAscV = builder.CreateICmpSLE (this->_variableAST->Codegen(b), endV, "forcondasc");
+  if (!condV) {
+    return nullptr;
+  }
+  builder.CreateCondBr(condAscV, loopBB, endBB);
+  
+    // Generate the link between previous code and the loop
+  f->getBasicBlockList().push_back(condDscBB);
+  builder.SetInsertPoint(condDscBB);
+  b.currentBlock() = condDscBB;
+  
+  // Generate condition ( $var >= end ? loop : endbb)
+  Value *condDscV = builder.CreateICmpSGE (this->_variableAST->Codegen(b), endV, "forconddsc");
+  if (!condV) {
+    return nullptr;
+  }
+  builder.CreateCondBr(condDscV, loopBB, endBB);
 
   // Emit Loop Body block
   f->getBasicBlockList().push_back(loopBB);
@@ -417,7 +444,8 @@ Value* ForAST::Codegen(Builder& b)
   }
   
     //increment the increment
-    Value *newIV = b.irbuilder().CreateAdd(this->_variableAST->Codegen(b), this->_incrementAST->Codegen(b), "addtmp", loopBB);
+    Value *incV = this->_incrementAST->Codegen(b);
+    Value *newIV = b.irbuilder().CreateAdd(this->_variableAST->Codegen(b), incV, "tmppp", loopBB);
  
     if (!newIV) {
       return nullptr;
