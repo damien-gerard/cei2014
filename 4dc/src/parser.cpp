@@ -477,7 +477,7 @@ ExprAST* Parser::primary() {
     return AST::Error<ExprAST>("unknown token when expecting an expression");
   }
 }
-
+/*
 PrototypeAST* Parser::prototype() {
   std::string fnName = this->_tok.str();
   if (!this->eatToken(TokenType::ID)) return nullptr;
@@ -494,7 +494,7 @@ PrototypeAST* Parser::prototype() {
 
   return new PrototypeAST(fnName, argNames);
 }
-
+*/
 
 // FunctionAST* Parser::functionDef() {
   // this->eatToken();

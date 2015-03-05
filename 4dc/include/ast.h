@@ -414,17 +414,17 @@ class DefinitionAST : public AST
 };
 
 class Builtin;
+class FunctionSignature;
 class PrototypeAST : public DefinitionAST
 {
   public:
     PrototypeAST(const Builtin&);
-    PrototypeAST(const std::string&, const std::vector<std::string>&);
+    PrototypeAST(FunctionSignature*);
     virtual ~PrototypeAST();
     virtual llvm::Function* Codegen(Builder&);
   protected:
   private:
-    std::string _name;
-    std::vector<std::string> _args;
+    FunctionSignature* _signature; // don't delete at destruction
     
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };

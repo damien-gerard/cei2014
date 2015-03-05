@@ -5,27 +5,25 @@
 #include <vector>
 #include <map>
 
-class Builtin;
 
+class Builtin;
+class FunctionSignature;
 int BUILTINalert(int);
 
 class Builtin {
   public:
-    Builtin(const std::string&, int, void*);
+    Builtin(FunctionSignature*, void*);
     ~Builtin();
     
-    std::string getName() const;
-    int getArgNumber() const;
-    std::vector<std::string> getArgsName() const;
-    void* getPtr() const;
+    inline FunctionSignature* signature() const {return _signature;}
+    inline void* getPtr() const {return _ptr;}
     
     static std::map<std::string, Builtin*> _list;
     static std::map<std::string, Builtin*> getList();
     
   protected:
   private:
-    std::string _name;
-    int _argNumber;
+    FunctionSignature* _signature;
     void* _ptr;
 };
 

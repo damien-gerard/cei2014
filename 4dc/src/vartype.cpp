@@ -19,6 +19,9 @@ std::ostream& operator<<(std::ostream& out, VarType vtype){
   case VarType::BOOLEAN:
     out << "boolean";
     break;
+  case VarType::VOID:
+    out << "void";
+    break;
   }
   return out;
 }

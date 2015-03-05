@@ -15,6 +15,8 @@ enum class VarType
   
   STRING,   // string
   BOOLEAN,  // true or false
+  
+  VOID, // used to type functions with no return value
 };
 
 std::ostream& operator<<(std::ostream& out, VarType vtype);

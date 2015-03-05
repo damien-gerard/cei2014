@@ -5,6 +5,7 @@
 #include "../include/util/util.h"
 #include "../include/builder.h"
 #include "../include/builtins.h"
+#include "../include/functionsignature.h"
 
 using namespace std;
 using namespace llvm;
@@ -919,7 +920,7 @@ Value* CallAST::Codegen(Builder& b)
   string& name = this->_name;
   
   if (Builtin::getList().count(name)) {
-    name = Builtin::getList()[name]->getName();
+    name = Builtin::getList()[name]->signature()->name();
   }
   // Look up the name in the global module table.
   Function *CalleeF = b.module().getFunction(name);
@@ -1015,10 +1016,10 @@ void DefinitionAST::_taggingPass(
  * PrototypeAST
  */
 PrototypeAST::PrototypeAST(const Builtin& builtin)
-  : PrototypeAST(builtin.getName(), builtin.getArgsName())
+  : PrototypeAST(builtin.signature())
 {}
-PrototypeAST::PrototypeAST(const std::string& name, const std::vector<std::string>& args)
-  : _name(name), _args(args)
+PrototypeAST::PrototypeAST(FunctionSignature* signature)
+  : _signature(signature)
 {}
 PrototypeAST::~PrototypeAST() = default;
 
@@ -1028,36 +1029,21 @@ string PrototypeAST::_toString(const string& firstPrefix, const string& prefix) 
   nextFirstPrefix = prefix + PREFIX_BEGIN;
   nextPrefix = prefix + PREFIX_END;
   stringstream ss;
-  ss  << firstPrefix << "Definition::Prototype " << this->_name << "(";
-  Util::join(ss, this->_args, ", ");
-  ss  << ")" << endl;
+  ss  << firstPrefix << "Definition::Prototype " << *this->_signature<< endl;
   return ss.str();
 }
 
 Function* PrototypeAST::Codegen(Builder& b)
 {
-  string name = this->_name;
+  string name = this->_signature->name();
+  int nbArgs = this->_signature->argsNumber();
   Type* retType = Type::getInt32Ty(b.context());
   
-  // Make the function type:  double(double,double) etc.
-  std::vector<Type*> Args(this->_args.size(),
-                             Type::getInt32Ty(b.context()));
+  // Make the function type:  int(int,int) etc.
+  std::vector<Type*> Args(nbArgs, Type::getInt32Ty(b.context()));
   Function *F = DefinitionAST::createFunc(name, Args, retType, b);
   
   assert(F != nullptr);
-  // Set names for all arguments.
-  /*
-  auto argsi  = this->_args.begin();
-  auto endi   = this->_args.end();
-  auto fargsi = F->arg_begin();
-  for (; argsi != endi; ++argsi, ++fargsi) {
-    fargsi->setName(*argsi);
-
-    // Add arguments to variable symbol table.
-    b.localVars()[*argsi] = fargsi;
-  }
-  F->setCallingConv(llvm::CallingConv::C);
-  */
   return F;
 }
 

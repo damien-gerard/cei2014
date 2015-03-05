@@ -34,6 +34,7 @@
 		<Unit filename="include/ast.h" />
 		<Unit filename="include/builder.h" />
 		<Unit filename="include/builtins.h" />
+		<Unit filename="include/functionsignature.h" />
 		<Unit filename="include/lexer.h" />
 		<Unit filename="include/llvm-dependencies.h" />
 		<Unit filename="include/parser.h" />
@@ -41,16 +42,19 @@
 		<Unit filename="include/util/logger.h" />
 		<Unit filename="include/util/nulostream.h" />
 		<Unit filename="include/util/util.h" />
+		<Unit filename="include/vartype.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/ast.cpp" />
 		<Unit filename="src/builder.cpp" />
 		<Unit filename="src/builtins.cpp" />
+		<Unit filename="src/functionsignature.cpp" />
 		<Unit filename="src/lexer.cpp" />
 		<Unit filename="src/parser.cpp" />
 		<Unit filename="src/token.cpp" />
 		<Unit filename="src/util/logger.cpp" />
 		<Unit filename="src/util/nulostream.cpp" />
 		<Unit filename="src/util/util.cpp" />
+		<Unit filename="src/vartype.cpp" />
 		<Extensions>
 			<AutoVersioning>
 				<Scheme minor_max="10" build_max="0" rev_max="0" rev_rand_max="10" build_times_to_increment_minor="100" />
