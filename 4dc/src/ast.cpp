@@ -373,7 +373,7 @@ Value* ForAST::Codegen(Builder& b)
   
   // Creates all the blocks
   BasicBlock *initBB = BasicBlock::Create(b.context(), "for.init", f);
-  BasicBlock *condBB = BasicBlock::Create(b.context(), "for.cond", f);
+  BasicBlock *condBB = BasicBlock::Create(b.context(), "for.cond");
   BasicBlock *loopBB = BasicBlock::Create(b.context(), "for.body");
   BasicBlock *endBB = BasicBlock::Create(b.context(), "for.cont");
   
@@ -393,6 +393,7 @@ Value* ForAST::Codegen(Builder& b)
 
   // Generate the link between previous code and the loop
   builder.CreateBr(condBB);
+  f->getBasicBlockList().push_back(condBB);
   builder.SetInsertPoint(condBB);
   b.currentBlock() = condBB;
   
