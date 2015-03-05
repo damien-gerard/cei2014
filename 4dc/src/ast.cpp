@@ -371,16 +371,17 @@ Value* ForAST::Codegen(Builder& b)
   assert(f != nullptr);
   
   // Creates all the blocks
-  BasicBlock *condBB = BasicBlock::Create(b.context(), "for.cond", f);
+  BasicBlock *initBB = BasicBlock::Create(b.context(), "for.init", f);
+  BasicBlock *condBB = BasicBlock::Create(b.context(), "for.cond");
   BasicBlock *loopBB = BasicBlock::Create(b.context(), "for.body");
   BasicBlock *endBB = BasicBlock::Create(b.context(), "for.cont");
   
-  // Generate the link between previous code and the loop
-  builder.CreateBr(condBB);
-  builder.SetInsertPoint(condBB);
-  b.currentBlock() = condBB;
-  
 
+  
+  // Generate the link between previous code and the loop
+  //builder.CreateBr(initBB);
+  //builder.SetInsertPoint(initBB);
+  b.currentBlock() = initBB;
 
   //init increment
   AffectationAST initAST = AffectationAST(this->_variableAST, this->_beginAST);
@@ -391,7 +392,10 @@ Value* ForAST::Codegen(Builder& b)
     return nullptr;
   }
 
-
+  // Generate the link between previous code and the loop
+  builder.CreateBr(condBB);
+  builder.SetInsertPoint(condBB);
+  b.currentBlock() = condBB;
   
   // Generate condition
   BinOpAST condAST = BinOpAST("!=", this->_variableAST, this->_endAST);
@@ -421,7 +425,6 @@ Value* ForAST::Codegen(Builder& b)
     
     AffectationAST incrementAST = AffectationAST(this->_variableAST, &incremAST);
     Value *incrementV = incrementAST.Codegen(b);
-    
     
     if (!incrementV) {
       return nullptr;
