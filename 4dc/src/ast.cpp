@@ -329,15 +329,36 @@ void ForAST::_taggingPass(
   this->_variableAST->setType(VarType::INT);
   this->_beginAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   if(_beginAST->getType() != VarType::INT){
-    Logger::error << "AST error: the begin exression of 'for' must be an int, not a " << _beginAST->getType() << std::endl;
+    if(_beginAST->getType() == VarType::NOTDEFINE){
+      _beginAST->setType(VarType::INT);
+    }else if(_beginAST->getType() == VarType::NUMBER){
+      _beginAST->setType(VarType::INT);
+      Logger::warning << "AST warning: the begin exression of 'for' has been implicitly convert from NUMBER into a int " << std::endl;
+    }else{
+      Logger::error << "AST error: the begin exression of 'for' must be an int, not a " << _beginAST->getType() << std::endl;
+    }
   }
   this->_endAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   if(_endAST->getType() != VarType::INT){
-    Logger::error << "AST error: the end exression of 'for' must be an int, not a " << _endAST->getType() << std::endl;
+    if(_endAST->getType() == VarType::NOTDEFINE){
+      _endAST->setType(VarType::INT);
+    }else if(_endAST->getType() == VarType::NUMBER){
+      _endAST->setType(VarType::INT);
+      Logger::warning << "AST warning: the end exression of 'for' has been implicitly convert from NUMBER into a int " << std::endl;
+    }else{
+      Logger::error << "AST error: the end exression of 'for' must be an int, not a " << _endAST->getType() << std::endl;
+    }
   }
   this->_incrementAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   if(_incrementAST->getType() != VarType::INT){
-    Logger::error << "AST error: the increment exression of 'for' must be an int, not a " << _incrementAST->getType() << std::endl;
+    if(_incrementAST->getType() == VarType::NOTDEFINE){
+      _incrementAST->setType(VarType::INT);
+    }else if(_incrementAST->getType() == VarType::NUMBER){
+      _incrementAST->setType(VarType::INT);
+      Logger::warning << "AST warning: the increment exression of 'for' has been implicitly convert from NUMBER into a int " << std::endl;
+    }else{
+      Logger::error << "AST error: the increment exression of 'for' must be an int, not a " << _incrementAST->getType() << std::endl;
+    }  
   }
 }
 
@@ -385,7 +406,11 @@ void WhileAST::_taggingPass(
 {
   this->_condAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   if(_condAST->getType() != VarType::BOOLEAN){
-    Logger::error << "AST error: the condition of 'while' must be a boolean, not a " << _condAST->getType() << std::endl;
+    if(_condAST->getType() == VarType::NOTDEFINE){
+      _condAST->setType(VarType::BOOLEAN);
+    }else{
+      Logger::error << "AST error: the condition of 'while' must be a boolean, not a " << _condAST->getType() << std::endl;
+    }
   }
   this->_loopAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
 }
@@ -467,7 +492,11 @@ void RepeatAST::_taggingPass(
   this->_loopAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   this->_condAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
   if(_condAST->getType() != VarType::BOOLEAN){
-    Logger::error << "AST error: the condition of 'while' must be a boolean, not a " << _condAST->getType() << std::endl;
+    if(_condAST->getType() == VarType::NOTDEFINE){
+      _condAST->setType(VarType::BOOLEAN);
+    }else{
+      Logger::error << "AST error: the condition of 'while' must be a boolean, not a " << _condAST->getType() << std::endl;
+    }
   }
 }
 
