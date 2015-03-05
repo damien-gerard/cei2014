@@ -379,14 +379,12 @@ Value* ForAST::Codegen(Builder& b)
 
   
   // Generate the link between previous code and the loop
-  //builder.CreateBr(initBB);
-  //builder.SetInsertPoint(initBB);
+  builder.CreateBr(initBB);
+  builder.SetInsertPoint(initBB);
   b.currentBlock() = initBB;
 
   //init increment
-  AffectationAST initAST = AffectationAST(this->_variableAST, this->_beginAST);
-  Value *initV = initAST.Codegen(b);
-    
+  Value *initV = this->_variableAST->CodegenMute(b, this->_beginAST->Codegen(b));
   
   if (!initV) {
     return nullptr;
@@ -398,10 +396,7 @@ Value* ForAST::Codegen(Builder& b)
   b.currentBlock() = condBB;
   
   // Generate condition
-  BinOpAST condAST = BinOpAST("!=", this->_variableAST, this->_endAST);
-  condAST.setType(VarType::BOOLEAN);
-  
-  Value *condV = condAST.Codegen(b);
+  Value *condV = builder.CreateICmpNE (this->_variableAST->Codegen(b), this->_endAST->Codegen(b), "forcond");
   if (!condV) {
     return nullptr;
   }
@@ -420,11 +415,13 @@ Value* ForAST::Codegen(Builder& b)
   }
   
     //increment the increment
-    BinOpAST incremAST = BinOpAST("+", this->_variableAST, this->_incrementAST);
-    incremAST.setType(VarType::INT);
-    
-    AffectationAST incrementAST = AffectationAST(this->_variableAST, &incremAST);
-    Value *incrementV = incrementAST.Codegen(b);
+    Value *newIV = b.irbuilder().CreateAdd(this->_variableAST->Codegen(b), this->_incrementAST->Codegen(b), "addtmp", loopBB);
+ 
+    if (!newIV) {
+      return nullptr;
+    }
+  
+    Value *incrementV = this->_variableAST->CodegenMute(b, newIV);
     
     if (!incrementV) {
       return nullptr;
