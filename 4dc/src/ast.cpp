@@ -372,7 +372,7 @@ Value* ForAST::Codegen(Builder& b)
   
   // Creates all the blocks
   BasicBlock *initBB = BasicBlock::Create(b.context(), "for.init", f);
-  BasicBlock *condBB = BasicBlock::Create(b.context(), "for.cond");
+  BasicBlock *condBB = BasicBlock::Create(b.context(), "for.cond", f);
   BasicBlock *loopBB = BasicBlock::Create(b.context(), "for.body");
   BasicBlock *endBB = BasicBlock::Create(b.context(), "for.cont");
   
