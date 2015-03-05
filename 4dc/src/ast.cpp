@@ -364,6 +364,77 @@ void ForAST::_taggingPass(
 
 Value* ForAST::Codegen(Builder& b)
 {
+  IRBuilder<>& builder = b.irbuilder();
+  
+  // Find the function to generate the code in
+  Function *f = builder.GetInsertBlock()->getParent();
+  assert(f != nullptr);
+  
+  // Creates all the blocks
+  BasicBlock *condBB = BasicBlock::Create(b.context(), "for.cond", f);
+  BasicBlock *loopBB = BasicBlock::Create(b.context(), "for.body");
+  BasicBlock *endBB = BasicBlock::Create(b.context(), "for.cont");
+  
+  // Generate the link between previous code and the loop
+  builder.CreateBr(condBB);
+  builder.SetInsertPoint(condBB);
+  b.currentBlock() = condBB;
+  
+
+
+  //init increment
+  AffectationAST initAST = AffectationAST(this->_variableAST, this->_beginAST);
+  Value *initV = initAST.Codegen(b);
+    
+  
+  if (!initV) {
+    return nullptr;
+  }
+
+
+  
+  // Generate condition
+  BinOpAST condAST = BinOpAST("!=", this->_variableAST, this->_endAST);
+  condAST.setType(VarType::BOOLEAN);
+  
+  Value *condV = condAST.Codegen(b);
+  if (!condV) {
+    return nullptr;
+  }
+  builder.CreateCondBr(condV, loopBB, endBB);
+  
+
+  // Emit Loop Body block
+  f->getBasicBlockList().push_back(loopBB);
+  builder.SetInsertPoint(loopBB);
+  b.currentBlock() = loopBB;
+  
+  
+  // Generate loop body
+  if (!this->_loopAST->Codegen(b)) {
+    return nullptr;
+  }
+  
+    //increment the increment
+    BinOpAST incremAST = BinOpAST("+", this->_variableAST, this->_incrementAST);
+    incremAST.setType(VarType::INT);
+    
+    AffectationAST incrementAST = AffectationAST(this->_variableAST, &incremAST);
+    Value *incrementV = incrementAST.Codegen(b);
+    
+    
+    if (!incrementV) {
+      return nullptr;
+    }
+
+  
+  builder.CreateBr(condBB);
+
+  
+  // Emit loop continuation block
+  f->getBasicBlockList().push_back(endBB);
+  builder.SetInsertPoint(endBB);
+  b.currentBlock() = endBB;
   return nullptr;
 }
 
@@ -838,7 +909,6 @@ string BinOpAST::_toString(const string& firstPrefix, const string& prefix) cons
 
 Value* BinOpAST::Codegen(Builder& b)
 {
-
   Value *L = this->_lhs->Codegen(b);
   Value *R = this->_rhs->Codegen(b);
   if (!L || !R) {
@@ -858,6 +928,7 @@ Value* BinOpAST::Codegen(Builder& b)
   if (this->_str == "<=") return b.irbuilder().CreateICmpSLE(L, R, "letmp");
   if (this->_str == ">")  return b.irbuilder().CreateICmpSGT(L, R, "gttmp");
   if (this->_str == ">=") return b.irbuilder().CreateICmpSGE(L, R, "getmp");
+
   
   // Opérateurs logiques
   if (this->_str == "&")  return b.irbuilder().CreateAnd(L, R, "ortmp");
@@ -865,6 +936,7 @@ Value* BinOpAST::Codegen(Builder& b)
   if (this->_str == "^")  return b.irbuilder().CreateXor(L, R, "xortmp");
   
   if (this->_str == "=")  return b.irbuilder().CreateICmpEQ(L, R, "equals");
+  if (this->_str == "!=") return b.irbuilder().CreateICmpNE (L, R, "nequals");
   return AST::Error<Value>("invalid binary operator");
 }
 

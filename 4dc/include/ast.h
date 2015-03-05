@@ -145,7 +145,6 @@ class IfAST : public StatementAST
     virtual std::string _toString(const std::string& firstPrefix, const std::string& prefix) const;
 };
 
-
 class ForAST : public StatementAST
 {
   public:
