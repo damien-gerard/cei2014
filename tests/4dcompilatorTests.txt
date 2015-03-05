@@ -7,6 +7,7 @@
 + 4dcTests/testCountDownWithFor.4d
 + 4dcTests/testCountDownWithWhile.4d
 + 4dcTests/testCountDownWithRepeat.4d
++ 4dcTests/testComplexProg.4d
 #Tests d'erreur
 - 4dcTests/errorDivideby0.4d
 #

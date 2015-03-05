@@ -1,0 +1,30 @@
+$de := -20
+$a := 4
+
+
+
+$i := $de
+$somme des factorielles := 0
+
+While($i < 5)
+  If($i < 1)
+    $i := 0
+	If($i = 2)
+	  ALERT(0)
+	End if
+  Else
+    $factorielle := 1
+	
+	For( $j ; $i ; 1 ; -1 )
+	  $factorielle := $factorielle * $j
+    End for
+	ALERT($factorielle)
+	$somme des factorielles := $somme des factorielles + $factorielle
+	
+  End if
+  
+  $i := $i +1
+	
+End while
+
+ALERT($somme des factorielles)
