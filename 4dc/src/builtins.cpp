@@ -1,6 +1,7 @@
 #include "../include/builtins.h"
 #include "../include/functionsignature.h"
 #include <cstdio>
+#include <cstdlib>
 using namespace std;
 
 
@@ -10,10 +11,20 @@ int BUILTINalert(int i)
   return 0;
 }
 
+int BUILTINabort()
+{
+  abort();
+  return 0;
+}
+
 std::map<std::string, Builtin*> Builtin::_list{
   {"alert", new Builtin(new FunctionSignature(
       "BUILTINalert", VarType::INT, {VarType::INT}),
       (void*) &::BUILTINalert)
+  },
+  {"abort", new Builtin(new FunctionSignature(
+      "BUILTINabort", VarType::INT, {}),
+      (void*) &::BUILTINabort)
   }
 };
 
