@@ -244,9 +244,9 @@ bool IfAST::Codegen(Builder& b)
 
   // Create blocks for the then and else cases.  Insert the 'then' block at the
   // end of the function.
-  BasicBlock *thenBB = BasicBlock::Create(b.context(), "then", f);
-  BasicBlock *elseBB = BasicBlock::Create(b.context(), "else");
-  BasicBlock *mergeBB = BasicBlock::Create(b.context(), "ifcont");
+  BasicBlock *thenBB = BasicBlock::Create(b.context(), "if.then", f);
+  BasicBlock *elseBB = BasicBlock::Create(b.context(), "if.else");
+  BasicBlock *mergeBB = BasicBlock::Create(b.context(), "if.cont");
 
   builder.CreateCondBr(condV, thenBB, elseBB);
 
@@ -402,7 +402,7 @@ bool ForAST::Codegen(Builder& b)
   
   // Generate condition ( end > begin ? ascendant : descendant)
   Value *endV = this->_endAST->Codegen(b);
-  Value *condV = builder.CreateICmpSGT (endV, beginV, "forcond");
+  Value *condV = builder.CreateICmpSGT (endV, beginV, "for.cond.expr");
   if (!condV) {
     return false;
   }
@@ -414,7 +414,7 @@ bool ForAST::Codegen(Builder& b)
   b.currentBlock() = condAscBB;
   
   // Generate condition ( $var <= end ? loop : endbb)
-  Value *condAscV = builder.CreateICmpSLE (this->_variableAST->Codegen(b), endV, "forcondasc");
+  Value *condAscV = builder.CreateICmpSLE (this->_variableAST->Codegen(b), endV, "for.cond.expr.asc");
   if (!condV) {
     return false;
   }
@@ -426,7 +426,7 @@ bool ForAST::Codegen(Builder& b)
   b.currentBlock() = condDscBB;
   
   // Generate condition ( $var >= end ? loop : endbb)
-  Value *condDscV = builder.CreateICmpSGE (this->_variableAST->Codegen(b), endV, "forconddsc");
+  Value *condDscV = builder.CreateICmpSGE (this->_variableAST->Codegen(b), endV, "for.cond.expr.dsc");
   if (!condV) {
     return false;
   }
@@ -445,7 +445,7 @@ bool ForAST::Codegen(Builder& b)
   
     //increment the increment
     Value *incV = this->_incrementAST->Codegen(b);
-    Value *newIV = b.irbuilder().CreateAdd(this->_variableAST->Codegen(b), incV, "tmppp", loopBB);
+    Value *newIV = b.irbuilder().CreateAdd(this->_variableAST->Codegen(b), incV, "for.i", loopBB);
  
     if (!newIV) {
       return false;
@@ -747,7 +747,7 @@ Value* LocalVariableAST::Codegen(Builder& b)
 {
   AllocaInst* Alloca = b.localVars()[this->_name];
   assert(Alloca != nullptr);
-  Value* V = b.irbuilder().CreateLoad(Alloca);
+  Value* V = b.irbuilder().CreateLoad(Alloca, "var.local."+_name+".");
   return V ? V : AST::Error<Value>("Unknown local variable name");
 }
 Value* LocalVariableAST::CodegenMute(Builder& b, llvm::Value* Val)
@@ -787,7 +787,7 @@ Value* GlobaleVariableAST::Codegen(Builder& b)
 {
   GlobalVariable* ptr = b.globalVars()[this->_name];
   assert(ptr != nullptr);
-  Value* V = b.irbuilder().CreateLoad(ptr);
+  Value* V = b.irbuilder().CreateLoad(ptr, "var.global."+_name+".");
   return V ? V : AST::Error<Value>("Unknown global variable name");
 }
 Value* GlobaleVariableAST::CodegenMute(Builder& b, llvm::Value* Val)
@@ -828,7 +828,7 @@ Value* PersistentVariableAST::Codegen(Builder& b)
 {
   GlobalVariable* ptr = b.persistentVars()[this->_name];
   assert(ptr != nullptr);
-  Value* V = b.irbuilder().CreateLoad(ptr);
+  Value* V = b.irbuilder().CreateLoad(ptr, "var.persistent."+_name+".");
   return V ? V : AST::Error<Value>("Unknown persistent variable name");
 }
 Value* PersistentVariableAST::CodegenMute(Builder& b, llvm::Value* Val)
@@ -954,25 +954,25 @@ Value* BinOpAST::Codegen(Builder& b)
   auto* BB = b.currentBlock();
   assert(BB != nullptr);
   // Opérations arithmétiques
-  if (this->_str == "+") return b.irbuilder().CreateAdd(L, R, "addtmp", BB);
-  if (this->_str == "-") return b.irbuilder().CreateSub(L, R, "subtmp", BB);
-  if (this->_str == "*") return b.irbuilder().CreateMul(L, R, "multmp", BB);
-  if (this->_str == "/") return b.irbuilder().CreateSDiv(L, R, "divtmp", BB);
+  if (this->_str == "+") return b.irbuilder().CreateAdd(L, R, "op.add", BB);
+  if (this->_str == "-") return b.irbuilder().CreateSub(L, R, "op.sub", BB);
+  if (this->_str == "*") return b.irbuilder().CreateMul(L, R, "op.mul", BB);
+  if (this->_str == "/") return b.irbuilder().CreateSDiv(L, R, "op.div", BB);
   
   // Comparaisons
-  if (this->_str == "<")  return b.irbuilder().CreateICmpSLT(L, R, "lttmp");
-  if (this->_str == "<=") return b.irbuilder().CreateICmpSLE(L, R, "letmp");
-  if (this->_str == ">")  return b.irbuilder().CreateICmpSGT(L, R, "gttmp");
-  if (this->_str == ">=") return b.irbuilder().CreateICmpSGE(L, R, "getmp");
+  if (this->_str == "<")  return b.irbuilder().CreateICmpSLT(L, R, "op.lt");
+  if (this->_str == "<=") return b.irbuilder().CreateICmpSLE(L, R, "op.le");
+  if (this->_str == ">")  return b.irbuilder().CreateICmpSGT(L, R, "op.gt");
+  if (this->_str == ">=") return b.irbuilder().CreateICmpSGE(L, R, "op.ge");
 
   
   // Opérateurs logiques
-  if (this->_str == "&")  return b.irbuilder().CreateAnd(L, R, "ortmp");
-  if (this->_str == "|") return b.irbuilder().CreateOr(L, R, "andtmp");
+  if (this->_str == "&")  return b.irbuilder().CreateAnd(L, R, "op.or");
+  if (this->_str == "|") return b.irbuilder().CreateOr(L, R, "op.and");
   //if (this->_str == "^")  return b.irbuilder().CreateXor(L, R, "xortmp");
   
-  if (this->_str == "=")  return b.irbuilder().CreateICmpEQ(L, R, "equals");
-  if (this->_str == "#") return b.irbuilder().CreateICmpNE (L, R, "nequals");
+  if (this->_str == "=")  return b.irbuilder().CreateICmpEQ(L, R, "op.eq");
+  if (this->_str == "#") return b.irbuilder().CreateICmpNE (L, R, "op.neq");
   
   stringstream ss;
   ss << endl << "Build Error: Invalid binary operator " << _str;
@@ -1059,7 +1059,7 @@ Value* CallAST::Codegen(Builder& b)
     }
   }
 
-  return b.irbuilder().CreateCall(CalleeF, ArgsV, "calltmp");
+  return b.irbuilder().CreateCall(CalleeF, ArgsV, "call." + name);
 }
 
 

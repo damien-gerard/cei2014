@@ -192,7 +192,7 @@ Function* Builder::createMain(FunctionSignature* signature, Function* F)
   Function* main = Func::create(mainSig, *this);
   assert(main != nullptr);
   
-  BasicBlock* block = BasicBlock::Create(context(), "entry", main);
+  BasicBlock* block = BasicBlock::Create(context(), "main.entry", main);
   assert(block != nullptr);
   
   irbuilder().SetInsertPoint(block);

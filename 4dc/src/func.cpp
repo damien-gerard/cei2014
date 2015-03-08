@@ -118,7 +118,7 @@ Function* Func::Codegen(Builder& b)
   
   Logger::debug << "  Initialisation du bloc... ";
   // Create a new basic block to start insertion into.
-  BasicBlock *block = BasicBlock::Create(b.context(), "entry", F);
+  BasicBlock *block = BasicBlock::Create(b.context(), _name + ".entry", F);
   b.irbuilder().SetInsertPoint(block);
   b.currentBlock() = block;
   
@@ -157,7 +157,7 @@ Function* Func::Codegen(Builder& b)
     Value* retVal = ConstantInt::get(Type::getInt32Ty(b.context()), 0);
     if (b.localVars().count("0")) {
       Alloca = b.localVars()["0"];
-      retVal = b.irbuilder().CreateLoad(Alloca);
+      retVal = b.irbuilder().CreateLoad(Alloca, "var.return");
     }
     b.irbuilder().CreateRet(retVal);
     Logger::debug << "OK" << endl;
@@ -167,7 +167,7 @@ Function* Func::Codegen(Builder& b)
     verifyFunction(*F);
     Logger::debug << "OK" << endl;
     
-    //b.dumpDebug(F);
+    b.dumpDebug(F);
 
     Logger::debug << "  Optimisation... ";
     b.optimize(F);
