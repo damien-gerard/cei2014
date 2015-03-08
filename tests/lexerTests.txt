@@ -1,5 +1,6 @@
 #Tests valides
 + lexerTests/testVariableAEspace.4d
++ lexerTests/testOperateurs.4d
 + lexerTests/testAffectationEtSomme.4d
 + lexerTests/testIf.4d
 + lexerTests/testIfElse.4d

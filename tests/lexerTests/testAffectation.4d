@@ -1,3 +1,4 @@
-$1 := aze
+$a := 0
+a := 1
+<>a := a
 gru // zea
-toho := 12

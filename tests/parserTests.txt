@@ -1,9 +1,21 @@
 #Tests valides
 + parserTests/testIfNoBody.4d
++ parserTests/testWhileNoBody.4d
++ parserTests/testRepeatNoBody.4d
++ parserTests/testUnary.4d
 #Tests d'erreur
 - parserTests/errorAffectANonVariable.4d
 - parserTests/errorIfNoLParenthesis.4d
 - parserTests/errorIfNoRParenthesis.4d
 - parserTests/errorIfNoCondition.4d
 - parserTests/errorIfNoEndIf.4d
+- parserTests/errorWhileNoCondition.4d
+- parserTests/errorWhileNoEndWhile.4d
+- parserTests/errorRepeatNoCondition.4d
+- parserTests/errorRepeatNoUntil.4d
+- parserTests/errorPartialCall.4d
+- parserTests/errorPartialCall2.4d
+- parserTests/errorOpNoLeftExpression.4d
+- parserTests/errorOpNoRightExpression.4d
+- parserTests/errorUnaryNoRightExpression.4d
 #

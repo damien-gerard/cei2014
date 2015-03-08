@@ -1,3 +1,8 @@
+$a:=5
 For($i ; 10 ; 0 ; -1)
   ALERT($i)
+  $a:=$i
 End for
+If ($a # 0)
+  ABORT()
+End If

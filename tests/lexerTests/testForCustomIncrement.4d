@@ -1,4 +1,4 @@
-For($vlElem;2;Size of array(anArray);2)
+For($vlElem;2;100;2)
   //Do something with the element #2,#4...#2n
     $vlElem:=3
  End for

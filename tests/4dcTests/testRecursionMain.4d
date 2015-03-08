@@ -1,0 +1,4 @@
+// testRecursion calcul la factorielle
+if (testRecursion(4) # 24)
+  ABORT()
+end if

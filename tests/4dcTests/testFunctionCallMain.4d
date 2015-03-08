@@ -1,0 +1,3 @@
+if (testFunctionCall(5) # 5)
+  ABORT()
+end if

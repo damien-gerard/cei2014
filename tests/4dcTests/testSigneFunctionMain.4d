@@ -1,0 +1,7 @@
+if (testSigneFunction(42) # 1)
+  ABORT()
+end if
+
+if (testSigneFunction(-42) # -1)
+  ABORT()
+end if
