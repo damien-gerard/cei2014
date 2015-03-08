@@ -120,15 +120,16 @@ Func* Builder::parse(
   Lexer lexer(in);
   Parser parser(lexer);
   BlocAST* ast = parser.parse();
+  
+  if (!ast) {
+    exit(EXIT_FAILURE);
+  }
+  
   if (&in == &cin) {
     Logger::debug << "Parse la fonction " << name << endl;
     Logger::debug << "  parse clavier OK" << endl;
   } else {
     Logger::debug << "OK" << endl;
-  }
-  
-  if (!ast) {
-    exit(EXIT_FAILURE);
   }
   
   Func* Fdef = new Func(name, ast);
@@ -146,11 +147,12 @@ llvm::Function* Builder::build(Func* Fdef)
 {
   assert(Fdef != nullptr);
   Function *F = Fdef->Codegen(*this);
-  Logger::debug << endl << "Dump: ";
   if (F) {
+    Logger::debug << endl << "Dump: ";
     dumpDebug(F);
   } else {
-    Logger::debug << "vide" << endl;
+    Logger::error << "Build Error: Couldn't build function \"" << Fdef->name() << "\"" << endl;
+    exit(EXIT_FAILURE);
   }
   return F;
 }

@@ -85,7 +85,7 @@ BasicBlock* BlocAST::Codegen(Builder& b, const std::string& name, Function* f)
   assert(block != nullptr);
   b.irbuilder().SetInsertPoint(block);
   for (auto& statement : this->_statements) {
-    statement->Codegen(b);
+    if (!statement->Codegen(b)) return nullptr;
   }
   block = b.irbuilder().GetInsertBlock();
   return block;
@@ -969,11 +969,14 @@ Value* BinOpAST::Codegen(Builder& b)
   // Opérateurs logiques
   if (this->_str == "&")  return b.irbuilder().CreateAnd(L, R, "ortmp");
   if (this->_str == "|") return b.irbuilder().CreateOr(L, R, "andtmp");
-  if (this->_str == "^")  return b.irbuilder().CreateXor(L, R, "xortmp");
+  //if (this->_str == "^")  return b.irbuilder().CreateXor(L, R, "xortmp");
   
   if (this->_str == "=")  return b.irbuilder().CreateICmpEQ(L, R, "equals");
-  if (this->_str == "!=") return b.irbuilder().CreateICmpNE (L, R, "nequals");
-  return AST::Error<Value>("invalid binary operator");
+  if (this->_str == "#") return b.irbuilder().CreateICmpNE (L, R, "nequals");
+  
+  stringstream ss;
+  ss << endl << "Build Error: Invalid binary operator " << _str;
+  return AST::Error<Value>(ss.str());
 }
 
 
@@ -1031,13 +1034,18 @@ Value* CallAST::Codegen(Builder& b)
   }
   // Look up the name in the global module table.
   Function *CalleeF = b.module().getFunction(name);
-  if (CalleeF == 0) {
-    return AST::Error<Value>("Unknown function referenced");
+  if (!CalleeF) {
+    stringstream ss;
+    ss  << endl << "Build Error: Unknown function \"" << name << "\"";
+    return AST::Error<Value>(ss.str());
   }
 
   // If argument mismatch error.
   if (CalleeF->arg_size() != this->_args.size()) {
-    return AST::Error<Value>("Incorrect # arguments passed");
+    stringstream ss;
+    ss  << endl << "Build Error: Incorrect args number passed to \"" << name << "\": "
+        << CalleeF->arg_size() << " expected, " << this->_args.size() << " passed";
+    return AST::Error<Value>(ss.str());
   }
 
   std::vector<Value*> ArgsV;

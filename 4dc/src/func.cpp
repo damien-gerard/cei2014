@@ -148,9 +148,8 @@ Function* Func::Codegen(Builder& b)
   
   Logger::debug << "  Compilation du corps de la fonction... ";
   block = this->_body->Codegen(b, F);
-  assert(block != nullptr);
-  Logger::debug << "OK" << endl;
   if (block) {
+    Logger::debug << "OK" << endl;
     Logger::debug << "  Finalisation... ";
     b.irbuilder().SetInsertPoint(block);
     // Finish off the function.
@@ -176,7 +175,6 @@ Function* Func::Codegen(Builder& b)
 
     return F;
   }
-  Logger::debug << "Bloc Vide." << endl;
 
   return nullptr;
 }
@@ -184,6 +182,9 @@ Function* Func::Codegen(Builder& b)
 
 std::ostream& operator<<(std::ostream& out, const Func& f)
 {
-  return out << *f._signature << endl << *f._body << endl;
+  if (f._signature) {
+    return out << *f._signature << endl << *f._body << endl;
+  }
+  return out << f._name << endl << *f._body << endl;
 }
 

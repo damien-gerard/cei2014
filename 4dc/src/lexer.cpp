@@ -109,9 +109,8 @@ Token Lexer::eatStringToken()
   this->_str = "";
   while (this->_chr != '"') {
     if (this->_chr == EOF) {
-      Logger::error << "Lex Error: Expected '\"' but found EOF" << std::endl;
+      Logger::error << "Lexer Error: Expected '\"' but found EOF" << std::endl;
       exit(EXIT_FAILURE);
-      return TokenType::ENDF;
     }
     this->eatChr();
   }
@@ -170,12 +169,22 @@ Token Lexer::eatSymbolToken()
 }
 Token Lexer::eatOpToken()
 {
-  return Token(TokenType::OP, this->_str);
+  std::string& str = this->_str;
+  if (str != "+" && str != "-" && str != "*" && str != "/" && str != "=" && str != "#" &&
+      str != "&" && str != "|" && str != "<" && str != ">" && str !=">=" && str !="<=") {
+    while (!isSpace(this->_chr) && !isAlphaNum(this->_chr)
+           && !isEndLine(this->_chr) && this->_chr != EOF) {
+      eatChr();
+    }
+    Logger::error << "Lexer Error: Unknown Token " << str << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  return Token(TokenType::OP, str);
 }
 
 Token Lexer::eatSingleLineComment()
 {
-  Logger::warning << "Lex Warning: Comments not stored" << std::endl;
+  Logger::warning << "Lexer Warning: Comments not stored" << std::endl;
   while (!isEndLine(this->_chr)) {
     if (this->_chr == EOF) {
       return TokenType::ENDF;
@@ -188,7 +197,7 @@ Token Lexer::eatSingleLineComment()
 
 Token Lexer::eatMultilineLineComment()
 {
-  Logger::warning << "Lex Warning: Comments not stored" << std::endl;
+  Logger::warning << "Lexer Warning: Comments not stored" << std::endl;
   int chr0, chr1;
   chr1 = this->eatChr();
   do {

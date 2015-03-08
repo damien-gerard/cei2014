@@ -14,7 +14,7 @@ Parser::~Parser() = default;
 
 std::string Parser::getErrorHeader(){
   std::stringstream ss;
-  ss << "Parse Error line(" << this->_currentLine << ") : ";
+  ss << "Parser Error (" << this->_currentLine << "): ";
   return ss.str();
 }
 
@@ -30,9 +30,9 @@ Token* Parser::eatToken() {
 Token* Parser::eatToken(const TokenType& type) {
   if (this->_tok != type) {
     std::stringstream ss;
-    ss << "Unexpected token " << this->_tok << ", expected " << type;
+    ss << "Unexpected " << this->_tok << ", expected " << type;
     Logger::error << this->getErrorHeader() << ss.str() << std::endl;
-    return AST::Error<Token>(ss.str());
+    return nullptr;
   }
   this->_tok = this->_lexer.nextToken();
   //Logger::info << this->_tok << std::endl;
@@ -121,7 +121,7 @@ ExprAST* Parser::callFunction(std::string functionName){
       }
 
       if (!this->eatToken(TokenType::SEMICOL)){
-        Logger::error << this->getErrorHeader() << " right parenthesis ')' expected" << std::endl;
+        Logger::error << this->getErrorHeader() << " or " << TokenType::RIGHTP << std::endl;
         return nullptr;
       }
     }
@@ -184,7 +184,8 @@ StatementAST* Parser::statement() {
     if(this->_tok == TokenType::AFFECT){
       //verifie que expr est une variable.
       if (!expr->isVar()) {
-        Logger::error << this->getErrorHeader() << *expr << " is not a variable." << std::endl;
+        Logger::error << this->getErrorHeader() << *expr
+                      << this->getErrorHeader() << " is not a variable." << std::endl;
         exit(EXIT_FAILURE);
       }
       
@@ -289,9 +290,8 @@ StatementAST* Parser::forstatement() {
   }
   
   if(!variableAST){
-    Logger::error << this->getErrorHeader() << "variable token expected and not : "<< indexType << std::endl;
-    variableAST =  AST::Error<GlobaleVariableAST>("variable token expected in the for arguements");
-  return nullptr;
+    Logger::error << this->getErrorHeader() << "Variable token expected in for statement, but found: "<< indexType << std::endl;
+    return nullptr;
   }
   
   //Consomme le semi-colon
@@ -310,7 +310,7 @@ StatementAST* Parser::forstatement() {
 
   if(this->_tok == TokenType::SEMICOL){  // y a t'il une expression pour l'incrementation ?
     //Consomme le semi-colon
-  this->eatToken();
+    this->eatToken();
     
     // Parse l'expression de debut de boucle
     incrementAST = this->expression();
@@ -429,7 +429,7 @@ ExprAST* Parser::uniOpExpr(){
     this->eatToken();
   ExprAST *expr = this->primary();  //On récupére l'AST de la partie droite de l'opération
     if (!expr){
-      Logger::error << this->getErrorHeader() << "primary expression expected after operator '" << uniOP <<"'"<< std::endl;
+      Logger::error << this->getErrorHeader() << "Primary expression expected after operator '" << uniOP <<"'"<< std::endl;
       return nullptr;
     }
   return new UniOpAST(uniOP,expr);
@@ -469,56 +469,10 @@ ExprAST* Parser::primary() {
   case TokenType::LEFTP:
     return this->parenthesis();
   default:
-    Logger::error << this->getErrorHeader() << "unknown token when expecting an expression : " << this->_tok.type() << std::endl;
-    return AST::Error<ExprAST>("unknown token when expecting an expression");
+    Logger::error << this->getErrorHeader() << "Invalid token when parsing primary expression, found: " << this->_tok.type() << std::endl;
+    return nullptr;
   }
 }
-/*
-PrototypeAST* Parser::prototype() {
-  std::string fnName = this->_tok.str();
-  if (!this->eatToken(TokenType::ID)) return nullptr;
-
-  if (!this->eatToken(TokenType::LEFTP)) return nullptr;
-
-  std::vector<std::string> argNames;
-  while (this->_tok == TokenType::ID) {
-    argNames.push_back(this->_tok.str());
-    this->eatToken();
-  }
-
-  if (!this->eatToken(TokenType::RIGHTP)) return nullptr;
-
-  return new PrototypeAST(fnName, argNames);
-}
-*/
-
-// FunctionAST* Parser::functionDef() {
-  // this->eatToken();
-  // PrototypeAST* proto = this->prototype();
-  // if (!proto) return nullptr;
-
-  // if (AST *E = this->expression()) {
-      // return new FunctionAST(proto, E);
-  // }
-  // return nullptr;
-// }
-
-
-// PrototypeAST* Parser::externDef() {
-  // this->eatToken();
-  // return this->prototype();
-// }
-
-
-
-// FunctionAST* Parser::topLevelExpr() {
-  // if (AST* E = this->expression()) {
-    // PrototypeAST* proto = new PrototypeAST("", std::vector<std::string>());
-    // return new FunctionAST(proto, E);
-  // }
-  // return nullptr;
-// }
-
 
 
 
