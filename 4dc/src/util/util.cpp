@@ -34,6 +34,28 @@ namespace Util {
     return str;
   }
   
+  
+  string&& ltrim(string&& s)
+  {
+    return move(ltrim(s));
+  }
+  string&& rtrim(string&& s)
+  {
+    return move(rtrim(s));
+  }
+  string&& trim(string&& s)
+  {
+    return move(trim(s));
+  }
+  string&& downcase(string&& s)
+  {
+    return move(downcase(s));
+  }
+  string&& upcase(string&& s)
+  {
+    return move(upcase(s));
+  }
+  
   string basename(const string& path)
   {
     auto basenameBegin = path.begin();

@@ -9,7 +9,8 @@ using namespace std;
 using namespace llvm;
 
 Func::Func(const string& name, BlocAST* body)
-  : _name(name), _signature(nullptr), _body(body)
+  : _name(Util::trim(Util::downcase(string(name)))),
+    _signature(nullptr), _body(body)
 {}
 
 Func::~Func()
