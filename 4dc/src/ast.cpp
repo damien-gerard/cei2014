@@ -746,12 +746,14 @@ string LocalVariableAST::_toString(const string& firstPrefix, const string& pref
 Value* LocalVariableAST::Codegen(Builder& b)
 {
   AllocaInst* Alloca = b.localVars()[this->_name];
+  assert(Alloca != nullptr);
   Value* V = b.irbuilder().CreateLoad(Alloca);
   return V ? V : AST::Error<Value>("Unknown local variable name");
 }
 Value* LocalVariableAST::CodegenMute(Builder& b, llvm::Value* Val)
 {
   AllocaInst* Alloca = b.localVars()[this->_name];
+  assert(Alloca != nullptr);
   Value* V = b.irbuilder().CreateStore(Val, Alloca);
   return V ? V : AST::Error<Value>("Unknown local variable name");
 }
@@ -783,15 +785,17 @@ string GlobaleVariableAST::_toString(const string& firstPrefix, const string& pr
 
 Value* GlobaleVariableAST::Codegen(Builder& b)
 {
-  AllocaInst* Alloca = b.globalVars()[this->_name];
-  Value* V = b.irbuilder().CreateLoad(Alloca);
+  GlobalVariable* ptr = b.globalVars()[this->_name];
+  assert(ptr != nullptr);
+  Value* V = b.irbuilder().CreateLoad(ptr);
   return V ? V : AST::Error<Value>("Unknown global variable name");
 }
 Value* GlobaleVariableAST::CodegenMute(Builder& b, llvm::Value* Val)
 {
-  AllocaInst* Alloca = b.globalVars()[this->_name];
-  Value* V = b.irbuilder().CreateStore(Val, Alloca);
-  return V ? V : AST::Error<Value>("Unknown local variable name");
+  GlobalVariable* ptr = b.globalVars()[this->_name];
+  assert(ptr != nullptr);
+  Value* V = b.irbuilder().CreateStore(Val, ptr);
+  return V ? V : AST::Error<Value>("Unknown global variable name");
 }
 
 
@@ -822,15 +826,17 @@ string PersistentVariableAST::_toString(const string& firstPrefix, const string&
 
 Value* PersistentVariableAST::Codegen(Builder& b)
 {
-  AllocaInst* Alloca = b.persistentVars()[this->_name];
-  Value* V = b.irbuilder().CreateLoad(Alloca);
+  GlobalVariable* ptr = b.persistentVars()[this->_name];
+  assert(ptr != nullptr);
+  Value* V = b.irbuilder().CreateLoad(ptr);
   return V ? V : AST::Error<Value>("Unknown persistent variable name");
 }
 Value* PersistentVariableAST::CodegenMute(Builder& b, llvm::Value* Val)
 {
-  AllocaInst* Alloca = b.persistentVars()[this->_name];
-  Value* V = b.irbuilder().CreateStore(Val, Alloca);
-  return V ? V : AST::Error<Value>("Unknown local variable name");
+  GlobalVariable* ptr = b.persistentVars()[this->_name];
+  assert(ptr != nullptr);
+  Value* V = b.irbuilder().CreateStore(Val, ptr);
+  return V ? V : AST::Error<Value>("Unknown persistent variable name");
 }
 
 
@@ -1048,249 +1054,4 @@ Value* CallAST::Codegen(Builder& b)
   return b.irbuilder().CreateCall(CalleeF, ArgsV, "calltmp");
 }
 
-
-/**
- * DefinitionAST
- */
-
-Function* DefinitionAST::createFunc(const std::string& name, std::vector<Type*> argsType, Type* retType, Builder& b)
-{
-  FunctionType *FT = FunctionType::get(retType, argsType, false);
-
-  Function *F = Function::Create(FT, Function::ExternalLinkage, name, &b.module());
-  assert(F != nullptr);
-
-
-  // If F conflicted, there was already something named 'Name'.  If it has a
-  // body, don't allow redefinition or reextern.
-  if (F->getName() != name) {
-    // Delete the one we just made and get the existing one.
-    F->eraseFromParent();
-    F = b.module().getFunction(name);
-
-    // If F already has a body, reject this.
-    if (!F->empty()) {
-      return AST::Error<Function>("redefinition of function");
-    }
-
-    // If F took a different number of args, reject.
-    if (F->arg_size() != argsType.size()) {
-      return AST::Error<Function>("redefinition of function with different # args");
-    }
-  }
-  return F;
-}
-AllocaInst* DefinitionAST::createEntryBlockAlloca(Function *F, const string& name, Type* type)
-{
-  IRBuilder<> TmpB(&F->getEntryBlock(),
-                 F->getEntryBlock().begin());
-  return TmpB.CreateAlloca(type, 0, name.c_str());
-}
-void DefinitionAST::createAllocas(
-          map<string, VarType>& types,
-          map<string, AllocaInst*>& vals,
-          Function* F,
-          Builder& b
-)
-{
-  AllocaInst *Alloca ;
-  string varName;
-  Type* varType = Type::getInt32Ty(b.context());
-  for (auto& varPair : types) {
-    varName = varPair.first;
-    //varType = varPair.second.getType();
-    if (vals.count(varName) == 0) {
-      Alloca = createEntryBlockAlloca(F, varName, varType);
-      vals[varName] = Alloca;
-    }
-  }
-}
-void DefinitionAST::_taggingPass(
-              std::map<int, VarType>& argVars,
-              std::map<std::string, VarType>& localVars,
-              std::map<std::string, VarType>& globaleVars,
-              std::map<std::string, VarType>& persistentVars
-            )
-{}
-
-/**
- * PrototypeAST
- */
-PrototypeAST::PrototypeAST(const Builtin& builtin)
-  : PrototypeAST(builtin.signature())
-{}
-PrototypeAST::PrototypeAST(FunctionSignature* signature)
-  : _signature(signature)
-{}
-PrototypeAST::~PrototypeAST() = default;
-
-string PrototypeAST::_toString(const string& firstPrefix, const string& prefix) const
-{
-  string nextFirstPrefix, nextPrefix;
-  nextFirstPrefix = prefix + PREFIX_BEGIN;
-  nextPrefix = prefix + PREFIX_END;
-  stringstream ss;
-  ss  << firstPrefix << "Definition::Prototype " << *this->_signature<< endl;
-  return ss.str();
-}
-
-Function* PrototypeAST::Codegen(Builder& b)
-{
-  string name = this->_signature->name();
-  int nbArgs = this->_signature->argsNumber();
-  Type* retType = Type::getInt32Ty(b.context());
-  
-  // Make the function type:  int(int,int) etc.
-  std::vector<Type*> Args(nbArgs, Type::getInt32Ty(b.context()));
-  Function *F = DefinitionAST::createFunc(name, Args, retType, b);
-  
-  assert(F != nullptr);
-  return F;
-}
-
-
-/**
- * FunctionAST
- */
-FunctionAST::FunctionAST(const std::string& name, BlocAST* body)
-  : _name(name), _body(body)
-{}
-FunctionAST::~FunctionAST()
-{
-  delete this->_body;
-}
-
-string FunctionAST::_toString(const string& firstPrefix, const string& prefix) const
-{
-  string nextFirstPrefix, nextPrefix;
-  nextFirstPrefix = prefix + PREFIX_BEGIN;
-  nextPrefix = prefix + PREFIX_MIDDLE;
-  stringstream ss;
-  ss  << firstPrefix << "Definition::Function " << this->_name;
-  nextPrefix = prefix + PREFIX_END;
-  ss  << this->_body->toString(nextFirstPrefix, nextPrefix);
-  return ss.str();
-}
-
-Function* FunctionAST::Codegen(Builder& b)
-{
-  string name = this->_name;
-  map<int, VarType> argVars;
-  map<string, VarType> localVars, globaleVars, persistentVars;
-  
-  Logger::debug << "Creating function" << endl << "Tagging the AST... ";
-  this->_body->taggingPass(argVars, localVars, globaleVars, persistentVars);
-  Logger::debug << "done." << endl;
-  
-  Logger::debug << "creating signature... ";
-  Value* retVal = ConstantInt::get(Type::getInt32Ty(b.context()), 0);
-  int nbArgs = 0;
-  for (auto& pairVar : argVars) {
-    int num = pairVar.first;
-    if (nbArgs < num) {
-      nbArgs = num;
-    }
-  }
-  Type* retType = Type::getInt32Ty(b.context());
-  
-  
-  // Make the function type:  double(double,double) etc.
-  std::vector<Type*> Args(nbArgs, Type::getInt32Ty(b.context()));
-  // for (auto& pairVar : argVars) {
-  //   int num = pairVar.first;
-  //   Type* type = pairVar.second.getType();
-  //   if (num == 0) {
-  //     retType = type;
-  //   } else {
-  //     Args[num] = type;
-  //   }
-  // }
-  Function *F = DefinitionAST::createFunc(name, Args, retType, b);
-  // Create a new basic block to start insertion into.
-  BasicBlock *block = BasicBlock::Create(b.context(), "entry", F);
-  b.irbuilder().SetInsertPoint(block);
-  b.currentBlock() = block;
-  
-  Logger::debug << "done." << endl;
-  
-  assert(F != nullptr);
-  assert(block != nullptr);
-  int i = 1;
-  AllocaInst *Alloca;
-  
-  b.localVars().clear();
-  Logger::debug << "creating allocas... ";
-  DefinitionAST::createAllocas(localVars, b.localVars(), F, b);
-  DefinitionAST::createAllocas(globaleVars, b.globalVars(), F, b);
-  DefinitionAST::createAllocas(persistentVars, b.persistentVars(), F, b);
-  Logger::debug << "done." << endl;
-  Logger::debug << "creating arguments... ";
-  
-  // Charge les arguments en mémoires
-  for (auto& arg : F->args()) {
-    if (argVars.count(i)) {
-      string s = Util::toS(i);
-      Alloca = b.localVars()[s];
-      assert(Alloca != nullptr);
-      b.irbuilder().CreateStore(&arg, Alloca);
-    }
-    ++i;
-  }
-  Logger::debug << "done." << endl;
-  Logger::debug << "creating body... ";
-
-  
-  //BasicBlock *block = this->_body->Codegen(b, F);
-  block = this->_body->Codegen(b, F);
-  Logger::debug << "done." << endl;
-  assert(block != nullptr);
-  if (block) {
-    Logger::debug << "finalizing... ";
-    b.irbuilder().SetInsertPoint(block);
-    // Finish off the function.
-    if (argVars.count(0)) {
-      Alloca = b.localVars()["0"];
-      retVal = b.irbuilder().CreateLoad(Alloca);
-    }
-    b.irbuilder().CreateRet(retVal);
-    Logger::debug << "done." << endl;
-    
-    Logger::debug << "Checking... ";
-    // Validate the generated code, checking for consistency.
-    verifyFunction(*F);
-    Logger::debug << "done." << endl;
-    F->dump();
-
-    Logger::debug << "optimizing... ";
-    b.optimize(F);
-    Logger::debug << "done." << endl;
-    Logger::debug << "Function Compiled." << endl;
-
-    return F;
-  }
-  Logger::debug << "Empty Block." << endl;
-
-  return nullptr;
-/*
-  // Create a new basic block to start insertion into.
-  BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "entry", f);
-  b.irbuilder().SetInsertPoint(BB);
-  Value *RetVal = this->_body->Codegen(b);
-  if (RetVal) {
-    // Finish off the function.
-    b.irbuilder().CreateRet(RetVal);
-
-    // Validate the generated code, checking for consistency.
-    verifyFunction(*f);
-
-    b.optimize(f);
-
-    return f;
-  }
-
-  // Error reading body, remove function.
-  f->eraseFromParent();
-  return nullptr;
-  */
-}
 

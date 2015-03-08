@@ -1,14 +1,18 @@
 #include "../include/builder.h"
+#include "../include/lexer.h"
 #include "../include/parser.h"
+#include "../include/func.h"
+#include "../include/functionsignature.h"
 #include "../include/util/logger.h"
 #include "../include/builtins.h"
 
+using namespace std;
 using namespace llvm;
 
 Builder::Builder()
   : Builder("Builder")
 {}
-Builder::Builder(const std::string& name)
+Builder::Builder(const string& name)
   : _mod(new Module(name, getGlobalContext())),
     _irb(getGlobalContext()), _ctx(_mod->getContext()),
     _currentBlock(nullptr),
@@ -29,45 +33,183 @@ Builder::~Builder()
   }
 }
 
-void Builder::build(AST* ast)
+void Builder::buildAll(const vector<pair<string,File>>& files)
 {
-  Function* F;
-  DefinitionAST* def = nullptr;
-  //BasicBlock* bloc = nullptr;
+  // Création de l'objet Builder qui va permettre de construire le programme
+  Builder builder;
+  builder.createJIT();
+  builder.setOptimizer(builder.getStandardOptimizer());
   
-  declareBuiltins();
-  def = new FunctionAST("", dynamic_cast<BlocAST*>(ast));
-  if (def) {
-    std::cerr << "Dump: ";
-    F = def->Codegen(*this);
-    if (F) {
-      F->dump();
+  // listes des variables globales et persistantes
+  map<string, VarType> globalVars;
+  map<string, VarType> persistentVars;
+  
+  // Liste des fonctions à compiler
+  vector<Func*> functionsDef(files.size());
+  vector<Function*> functions(files.size()); // LLVM
+  
+  const string* name;
+  const File* file;
+  
+  // Parcours de la liste des fichhiers pour parser les fonctions correspondantes
+  for (unsigned int i = 0; i < files.size(); ++i) {
+    name = &files[i].first;
+    file = &files[i].second;
+    // Si le "fichier" correspond à l'entrée standard, on choisit le flux d'entrée standard
+    if (file->isStdin()) {
+      functionsDef[i] = builder.parse(globalVars, persistentVars, *name, cin);
+      
+    // Sinon, on tente d'ouvrir le fichier
     } else {
-      std::cerr << "empty" << std::endl;
+      ifstream in(file->filename());
+      if (!in) {
+        Logger::error << "Cannot read file \"" << file->filename() << "\"" << endl;
+        exit(EXIT_FAILURE);
+      }
+      Logger::debug << "\"" << file->filename() << "\":" << endl;
+      functionsDef[i] = builder.parse(globalVars, persistentVars, *name, in);
     }
-    if (F && this->_jit) {
-      std::cerr << "Execution:" << std::endl;
-      void* fptr = this->_jit->getPointerToFunction(F);
-
-      // cast to native function
-      int (*f)() = (int (*)())(intptr_t)fptr;
-      std::cerr << "Result: " << f() << std::endl;
-    }
+    Logger::debug << *functionsDef[i];
   }
   
-  this->_mod->dump();
+  // Déclaration de toutes les BUILTINs existants
+  Logger::debug << "Declaration des BUILTINs" << endl;
+  builder.declareBuiltins();
+  Logger::debug << "Fin de la declaration des BUILTINs" << endl << endl;
+  
+  Logger::debug << "Declaration des variables globales" << endl
+                << "  globales     : ";
+  builder.createGlobals(globalVars, builder.globalVars()); // Declare global variables
+  
+  Logger::debug << endl 
+                << "  persistentes : ";
+  builder.createGlobals(persistentVars, builder.persistentVars()); // Declare persistent variables
+  
+  Logger::debug << endl << "Fin de la declaration des variables globales" << endl << endl;
+  
+  for (unsigned int i = 0; i < files.size(); ++i) {
+    functions[i] = builder.build(functionsDef[i]);
+    delete functionsDef[i];
+  }
+  Function* main = builder.createMain(functionsDef.back()->signature(), functions.back());
+  
+  Logger::debug << endl << "Toutes les fonctions ont ete compilees avec succes !" << endl << endl;
+  
+  builder._mod->dump();
+  
+  cout << endl;
+  
+  builder.callFunctionLLVM(main);
+}
+
+
+Func* Builder::parse(
+    map<string, VarType>& globalVars,
+    map<string, VarType>& persistentVars,
+    const string& name,
+    istream& in
+)
+{
+  // Parse le fichier
+  if (&in == &cin) {
+    Logger::debug << "Entree clavier en attente :" << endl;
+  } else {
+    Logger::debug << "Parse la fonction " << name << endl;
+    Logger::debug << "  parse... ";
+  }
+  Lexer lexer(in);
+  Parser parser(lexer);
+  BlocAST* ast = parser.parse();
+  if (&in == &cin) {
+    Logger::debug << "Parse la fonction " << name << endl;
+    Logger::debug << "  parse clavier OK" << endl;
+  } else {
+    Logger::debug << "OK" << endl;
+  }
+  
+  if (!ast) {
+    exit(EXIT_FAILURE);
+  }
+  
+  Func* Fdef = new Func(name, ast);
+  if (Fdef) {
+    Fdef->taggingPass(globalVars, persistentVars);
+  } else {
+    Logger::error << "Error: Couldn't parse function \"" << name << "\"" << endl;
+    exit(EXIT_FAILURE);
+  }
+  Logger::debug << "Fin du parse" << endl << endl;
+  return Fdef;
+}
+
+llvm::Function* Builder::build(Func* Fdef)
+{
+  assert(Fdef != nullptr);
+  Function *F = Fdef->Codegen(*this);
+  Logger::debug << endl << "Dump: ";
+  if (F) {
+    dumpDebug(F);
+  } else {
+    Logger::debug << "vide" << endl;
+  }
+  return F;
+}
+
+void Builder::callFunctionLLVM(Function* F)
+{
+  assert(F != nullptr);
+  if (F && this->_jit) {
+    Logger::info << "Execution :" << endl;
+    void* fptr = this->_jit->getPointerToFunction(F);
+
+    // cast to native function
+    int (*f)() = (int (*)())(intptr_t)fptr;
+    Logger::info << "=> " << f() << endl;
+  }
+}
+
+Function* Builder::createMain(FunctionSignature* signature, Function* F)
+{
+  Logger::debug << "Creation de la fonction main" << endl;
+  
+  string name = module().getFunction("main") ? "/main" : "main";
+  
+  FunctionSignature* mainSig = new FunctionSignature(name, VarType::INT);
+  assert(mainSig != nullptr);
+  
+  Function* main = Func::create(mainSig, *this);
+  assert(main != nullptr);
+  
+  BasicBlock* block = BasicBlock::Create(context(), "entry", main);
+  assert(block != nullptr);
+  
+  irbuilder().SetInsertPoint(block);
+  currentBlock() = block;
+  
+  Value* retVal = irbuilder().CreateCall(F, std::vector<Value*>{}, "calltmp");
+  assert(retVal != nullptr);
+  
+  irbuilder().CreateRet(retVal);
+  Logger::debug << "  Verification... ";
+  verifyFunction(*main);
+  Logger::debug << "OK" << endl;
+  Logger::debug << "  Optimisation... ";
+  optimize(main);
+  Logger::debug << "OK" << endl;
+  Logger::debug << "Fonction main OK" << endl;
+  return main;
 }
 
 void Builder::createJIT()
 {
   InitializeNativeTarget();
-  std::string err;
+  string err;
   EngineBuilder eb = EngineBuilder(this->_mod);
   eb.setErrorStr(&err);
   auto jit = eb.create();
   this->_jit = jit;
   if (!jit) {
-    Logger::critical << "Critical Error: Impossible de créer le moteur JIT : " << err << std::endl;
+    Logger::critical << "Critical Error: Impossible de creer le moteur JIT : " << err << endl;
   }
 }
 
@@ -112,17 +254,89 @@ void Builder::optimize(Function* f)
 
 void Builder::declareBuiltins()
 {
-  PrototypeAST* proto;
   Function* F;
   Builtin* builtin;
   for (auto& pBuiltin : Builtin::getList()) {
     builtin = &*pBuiltin.second;
     assert(builtin != nullptr);
-    proto = new PrototypeAST(*builtin);
-    F = proto->Codegen(*this);
+    F = Func::create(builtin->signature(), *this);
     assert(F != nullptr);
     if (_jit) {
       _jit->addGlobalMapping(F, builtin->getPtr());
     }
   }
 }
+
+
+AllocaInst* Builder::createEntryBlockAlloca(Function *F, const string& name, Type* type)
+{
+  IRBuilder<> TmpB(&F->getEntryBlock(),
+                 F->getEntryBlock().begin());
+  return TmpB.CreateAlloca(type, 0, name.c_str());
+}
+
+
+void Builder::createAllocas(
+          map<string, VarType>& types,
+          map<string, AllocaInst*>& vals,
+          Function* F
+)
+{
+  AllocaInst *Alloca ;
+  string varName;
+  Type* varType = Type::getInt32Ty(context());
+  for (auto& varPair : types) {
+    varName = varPair.first;
+    //varType = varPair.second.getType();
+    if (vals.count(varName) == 0) {
+      Alloca = createEntryBlockAlloca(F, varName, varType);
+      vals[varName] = Alloca;
+    }
+  }
+}
+
+
+void Builder::createGlobals(
+          map<string, VarType>& types,
+          map<string, GlobalVariable*>& vals
+)
+{
+  bool comma = false;
+  string name;
+  Type* type;
+  for (auto& var : types) {
+    name = var.first;
+    type = Type::getInt32Ty(context()); //should be return var.second.getType();
+    if (comma) {
+      Logger::debug << ", ";
+    } else {
+      comma = true;
+    }
+    Logger::debug << name;
+    if (vals.count(name) == 0) {
+       vals[name] = new GlobalVariable(
+                        this->module(),
+                        type,
+                        false,
+                        GlobalValue::ExternalLinkage,
+                        ConstantInt::get(Type::getInt32Ty(context()), 0),
+                        name
+      );
+    } // else -> type verification
+  }
+}
+
+
+void Builder::dumpDebug()
+{
+  if (&Logger::debug == &cout) {
+    _mod->dump();
+  }
+}
+void Builder::dumpDebug(llvm::Function* F)
+{
+  if (&Logger::debug == &cout) {
+    F->dump();
+  }
+}
+

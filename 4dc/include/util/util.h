@@ -13,6 +13,7 @@ namespace Util {
   std::string& trim(std::string&);
   std::string& downcase(std::string&);
   std::string& upcase(std::string&);
+  std::string basename(const std::string&);
   double str2dbl(const std::string&);
   long str2long(const std::string&);
   template<class T>

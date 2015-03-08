@@ -34,6 +34,20 @@ namespace Util {
     return str;
   }
   
+  string basename(const string& path)
+  {
+    auto basenameBegin = path.begin();
+    auto basenameEnd = path.end();
+    for (auto it = path.begin(); it != path.end(); ++it) {
+      if (*it == '/' || *it == '\\') {
+        basenameBegin = it+1;
+      } else if (*it == '.') {
+        basenameEnd = it;
+      }
+    }
+    return string(basenameBegin, basenameEnd);
+  }
+  
   double str2dbl(const std::string& str)
   {
     return strtod(str.c_str(), 0);

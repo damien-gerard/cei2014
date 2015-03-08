@@ -10,11 +10,7 @@ Parser::Parser(Lexer& lex)
   this->eatToken();
 }
 
-Parser::~Parser(){
-  if(this->_ast){
-    delete this->_ast;
-  }
-}
+Parser::~Parser() = default;
 
 std::string Parser::getErrorHeader(){
   std::stringstream ss;
@@ -526,12 +522,10 @@ PrototypeAST* Parser::prototype() {
 
 
 
-void Parser::parse() {
+BlocAST* Parser::parse() {
   if(this->_tok != TokenType::ENDF) {
-    this->_ast = this->bloc();
+    return this->bloc();
   }
+  return new BlocAST({});
 }
 
-AST* Parser::ast() {
-  return this->_ast;
-}

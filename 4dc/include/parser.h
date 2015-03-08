@@ -11,13 +11,11 @@ class Parser
   public:
     Parser(Lexer&);
   ~Parser();
-    void parse();
-  AST* ast();
+  BlocAST* parse();
   protected:
   private:
     Lexer& _lexer;
     Token _tok;
-    AST* _ast;
     int _currentLine;
     
     std::string getErrorHeader();
@@ -45,7 +43,7 @@ class Parser
     StatementAST* whilestatement();
     StatementAST* repeatstatement();
   
-    PrototypeAST* prototype();
+    //PrototypeAST* prototype();
     // FunctionAST* functionDef();
     // PrototypeAST* externDef();
     // FunctionAST* topLevelExpr();

@@ -1,13 +1,12 @@
 #include <iostream>
 
-#include "include/token.h"
-#include "include/lexer.h"
-#include "include/parser.h"
-#include "include/ast.h"
 #include "include/builder.h"
-#include "include/builtins.h"
 #include "include/util/logger.h"
+#include "include/util/file.h"
+#include "include/util/util.h"
 #include <fstream>
+#include <vector>
+#include <tuple>
 
 using namespace std;
 
@@ -15,10 +14,8 @@ void compileFile(istream&, Builder&);
 
 int main(int argc, char *argv[])
 {
-  Builder builder;
-  builder.createJIT();
-  builder.setOptimizer(builder.getStandardOptimizer());
-
+  vector<pair<string, File>> files;
+  
   bool readSTDIN = true;
   for(int i =1; i < argc; i++){
     readSTDIN = false;
@@ -27,32 +24,16 @@ int main(int argc, char *argv[])
       readSTDIN = true;
       break;
     }
-    Logger::info << "\"" << current_exec_name << "\" :" << endl;
-    std::ifstream myfile(current_exec_name);
-    if(myfile){
-      compileFile(myfile, builder);
-    
-    }else{
-      Logger::error << "Error: cannot find \"" << current_exec_name << "\"" << endl;
-      exit(EXIT_FAILURE);
-    }
+    files.emplace_back(Util::basename(current_exec_name), File(current_exec_name));
 
   }
 
   if (readSTDIN) {
-    compileFile(cin, builder);
+    files.emplace_back("stdin", File(""));
   }
+  
+  Builder::buildAll(files);
+  
   return 0;
 }
 
-void compileFile(istream& file, Builder& builder) {
-  Lexer lexer(file);
-  Parser parser(lexer);
-  parser.parse();
-  AST* ast = parser.ast();
-  if (!ast) {
-    exit(EXIT_FAILURE);
-  }
-  Logger::info << *ast << endl << endl;
-  builder.build(ast);
-}
