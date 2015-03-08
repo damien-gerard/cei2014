@@ -2,7 +2,7 @@ $i := 10
 Repeat
   $i := $i - 1
   ALERT($i)
-Until(i<=0)
+Until($i<=0)
 
 if ($i # 0)
   ABORT()
