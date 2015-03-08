@@ -89,11 +89,14 @@ void Builder::buildAll(const vector<pair<string,File>>& files)
   
   for (unsigned int i = 0; i < files.size(); ++i) {
     functions[i] = builder.build(functionsDef[i]);
-    delete functionsDef[i];
   }
   Function* main = builder.createMain(functionsDef.back()->signature(), functions.back());
   
   Logger::debug << endl << "Toutes les fonctions ont ete compilees avec succes !" << endl << endl;
+  
+  for (unsigned int i = 0; i < files.size(); ++i) {
+    delete functionsDef[i];
+  }
   
   builder._mod->dump();
   
@@ -173,6 +176,13 @@ void Builder::callFunctionLLVM(Function* F)
 Function* Builder::createMain(FunctionSignature* signature, Function* F)
 {
   Logger::debug << "Creation de la fonction main" << endl;
+  assert(signature != nullptr);
+  assert(F != nullptr);
+  
+  if (signature->argsNumber() != 0) {
+    Logger::error << "Build Error: " << *signature << " must take 0 argument" << endl;
+    exit(EXIT_FAILURE);
+  }
   
   string name = module().getFunction("main") ? "/main" : "main";
   

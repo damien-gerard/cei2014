@@ -135,7 +135,7 @@ void StatementExprAST::_taggingPass(
   this->_expr->taggingPass(argVars, localVars, globaleVars, persistentVars);
 }
 
-Value* StatementExprAST::Codegen(Builder& b)
+bool StatementExprAST::Codegen(Builder& b)
 {
   return this->_expr->Codegen(b);
 }
@@ -176,7 +176,7 @@ void AffectationAST::_taggingPass(
   this->_variableAST->setType(this->_expr->getType());
 }
 
-Value* AffectationAST::Codegen(Builder& b)
+bool AffectationAST::Codegen(Builder& b)
 {
   assert(this->_variableAST != nullptr);
   assert(this->_expr != nullptr);
@@ -230,14 +230,14 @@ void IfAST::_taggingPass(
   }
 }
 
-Value* IfAST::Codegen(Builder& b)
+bool IfAST::Codegen(Builder& b)
 {
   IRBuilder<>& builder = b.irbuilder();
 
   Value *condV = this->_condAST->Codegen(b);
 
   if (!condV) {
-    return nullptr;
+    return false;
   }
 
   Function *f = builder.GetInsertBlock()->getParent();
@@ -256,7 +256,7 @@ Value* IfAST::Codegen(Builder& b)
 
   Value *thenV = this->_thenAST->Codegen(b);
   if (!thenV) {
-    return nullptr;
+    return false;
   }
 
   builder.CreateBr(mergeBB);
@@ -269,7 +269,7 @@ Value* IfAST::Codegen(Builder& b)
   b.currentBlock() = elseBB;
 
   if (this->_elseAST && !this->_elseAST->Codegen(b)) {
-    return nullptr;
+    return false;
   }
 
   builder.CreateBr(mergeBB);
@@ -280,7 +280,7 @@ Value* IfAST::Codegen(Builder& b)
   f->getBasicBlockList().push_back(mergeBB);
   builder.SetInsertPoint(mergeBB);
   b.currentBlock() = mergeBB;
-  return nullptr;
+  return true;
 }
 
 string IfAST::_toString(const string& firstPrefix, const string& prefix) const
@@ -363,7 +363,7 @@ void ForAST::_taggingPass(
   }
 }
 
-Value* ForAST::Codegen(Builder& b)
+bool ForAST::Codegen(Builder& b)
 {
   IRBuilder<>& builder = b.irbuilder();
   
@@ -391,7 +391,7 @@ Value* ForAST::Codegen(Builder& b)
   Value *initV = this->_variableAST->CodegenMute(b, beginV);
 
   if (!initV) {
-    return nullptr;
+    return false;
   }
 
   // Create the entry cond block
@@ -404,7 +404,7 @@ Value* ForAST::Codegen(Builder& b)
   Value *endV = this->_endAST->Codegen(b);
   Value *condV = builder.CreateICmpSGT (endV, beginV, "forcond");
   if (!condV) {
-    return nullptr;
+    return false;
   }
   builder.CreateCondBr(condV, condAscBB, condDscBB);
   
@@ -416,7 +416,7 @@ Value* ForAST::Codegen(Builder& b)
   // Generate condition ( $var <= end ? loop : endbb)
   Value *condAscV = builder.CreateICmpSLE (this->_variableAST->Codegen(b), endV, "forcondasc");
   if (!condV) {
-    return nullptr;
+    return false;
   }
   builder.CreateCondBr(condAscV, loopBB, endBB);
   
@@ -428,7 +428,7 @@ Value* ForAST::Codegen(Builder& b)
   // Generate condition ( $var >= end ? loop : endbb)
   Value *condDscV = builder.CreateICmpSGE (this->_variableAST->Codegen(b), endV, "forconddsc");
   if (!condV) {
-    return nullptr;
+    return false;
   }
   builder.CreateCondBr(condDscV, loopBB, endBB);
 
@@ -440,7 +440,7 @@ Value* ForAST::Codegen(Builder& b)
   
   // Generate loop body
   if (!this->_loopAST->Codegen(b)) {
-    return nullptr;
+    return false;
   }
   
     //increment the increment
@@ -448,13 +448,13 @@ Value* ForAST::Codegen(Builder& b)
     Value *newIV = b.irbuilder().CreateAdd(this->_variableAST->Codegen(b), incV, "tmppp", loopBB);
  
     if (!newIV) {
-      return nullptr;
+      return false;
     }
   
     Value *incrementV = this->_variableAST->CodegenMute(b, newIV);
     
     if (!incrementV) {
-      return nullptr;
+      return false;
     }
 
   
@@ -465,7 +465,7 @@ Value* ForAST::Codegen(Builder& b)
   f->getBasicBlockList().push_back(endBB);
   builder.SetInsertPoint(endBB);
   b.currentBlock() = endBB;
-  return nullptr;
+  return true;
 }
 
 string ForAST::_toString(const string& firstPrefix, const string& prefix) const
@@ -516,7 +516,7 @@ void WhileAST::_taggingPass(
   this->_loopAST->taggingPass(argVars, localVars, globaleVars, persistentVars);
 }
 
-Value* WhileAST::Codegen(Builder& b)
+bool WhileAST::Codegen(Builder& b)
 {
   IRBuilder<>& builder = b.irbuilder();
   
@@ -537,7 +537,7 @@ Value* WhileAST::Codegen(Builder& b)
   // Generate condition
   Value *condV = this->_condAST->Codegen(b);
   if (!condV) {
-    return nullptr;
+    return false;
   }
   builder.CreateCondBr(condV, loopBB, endBB);
 
@@ -548,7 +548,7 @@ Value* WhileAST::Codegen(Builder& b)
   
   // Generate loop body
   if (!this->_loopAST->Codegen(b)) {
-    return nullptr;
+    return false;
   }
   builder.CreateBr(condBB);
   
@@ -556,7 +556,7 @@ Value* WhileAST::Codegen(Builder& b)
   f->getBasicBlockList().push_back(endBB);
   builder.SetInsertPoint(endBB);
   b.currentBlock() = endBB;
-  return nullptr;
+  return true;
 }
 
 string WhileAST::_toString(const string& firstPrefix, const string& prefix) const
@@ -601,7 +601,7 @@ void RepeatAST::_taggingPass(
   }
 }
 
-Value* RepeatAST::Codegen(Builder& b)
+bool RepeatAST::Codegen(Builder& b)
 {
   IRBuilder<>& builder = b.irbuilder();
   
@@ -620,13 +620,13 @@ Value* RepeatAST::Codegen(Builder& b)
   
   // Generate loop body
   if (!this->_loopAST->Codegen(b)) {
-    return nullptr;
+    return false;
   }
   
   // Generate condition
   Value *condV = this->_condAST->Codegen(b);
   if (!condV) {
-    return nullptr;
+    return false;
   }
   builder.CreateCondBr(condV, endBB, loopBB);
   
@@ -634,7 +634,7 @@ Value* RepeatAST::Codegen(Builder& b)
   f->getBasicBlockList().push_back(endBB);
   builder.SetInsertPoint(endBB);
   b.currentBlock() = endBB;
-  return nullptr;
+  return true;
 }
 
 string RepeatAST::_toString(const string& firstPrefix, const string& prefix) const

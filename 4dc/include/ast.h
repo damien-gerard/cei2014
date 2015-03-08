@@ -74,7 +74,7 @@ class StatementAST : public AST
 {
   public:
     virtual ~StatementAST();
-    virtual llvm::Value* Codegen(Builder&) = 0;
+    virtual bool Codegen(Builder&) = 0;
   protected:
   private:
   
@@ -87,7 +87,7 @@ class StatementExprAST : public StatementAST
   public:
     StatementExprAST(ExprAST*);
     virtual ~StatementExprAST();
-    virtual llvm::Value* Codegen(Builder&);
+    virtual bool Codegen(Builder&);
   protected:
   private:
     ExprAST* _expr; // delete at destruction
@@ -107,7 +107,7 @@ class AffectationAST : public StatementAST
   public:
     AffectationAST(VariableAST * variableAST, ExprAST* expr);
     virtual ~AffectationAST();
-    virtual llvm::Value* Codegen(Builder&);
+    virtual bool Codegen(Builder&);
   protected:
   private:
     VariableAST * _variableAST;
@@ -129,7 +129,7 @@ class IfAST : public StatementAST
     IfAST(ExprAST* condAST, BlocAST* thenAST);
     IfAST(ExprAST* condAST, BlocAST* thenAST, BlocAST* elseAST);
     virtual ~IfAST();
-    virtual llvm::Value* Codegen(Builder&);
+    virtual bool Codegen(Builder&);
   protected:
   private:
     ExprAST *_condAST; // delete at destruction
@@ -149,7 +149,7 @@ class ForAST : public StatementAST
   public:
     ForAST(VariableAST * variableAST, ExprAST * beginAST, ExprAST * endAST, ExprAST * incrementAST, BlocAST* loopAST);
     virtual ~ForAST();
-    virtual llvm::Value* Codegen(Builder&);
+    virtual bool Codegen(Builder&);
   protected:
   private:
     VariableAST * _variableAST;
@@ -173,7 +173,7 @@ class WhileAST : public StatementAST
   public:
     WhileAST(ExprAST* condAST, BlocAST* loopAST);
     virtual ~WhileAST();
-    virtual llvm::Value* Codegen(Builder&);
+    virtual bool Codegen(Builder&);
   protected:
   private:
     ExprAST *_condAST;
@@ -194,7 +194,7 @@ class RepeatAST : public StatementAST
   public:
     RepeatAST(ExprAST* condAST, BlocAST* loopAST);
     virtual ~RepeatAST();
-    virtual llvm::Value* Codegen(Builder&);
+    virtual bool Codegen(Builder&);
   protected:
   private:
     ExprAST *_condAST;
